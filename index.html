@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albert Ortells — Backend Engineer</title>
+<meta name="description" content="Backend engineer with 7+ years across banking, automotive, public administration and travel-tech. Currently leading payment integrations at Neobookings.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Albert Ortells — Backend Engineer">
+<meta property="og:description" content="Backend engineer with 7+ years across banking, automotive, public administration and travel-tech. Currently leading payment integrations at Neobookings.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Albert Ortells — Backend Engineer">
+<meta name="twitter:description" content="Backend engineer with 7+ years across banking, automotive, public administration and travel-tech. Currently leading payment integrations at Neobookings.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>
+  (function () {
+    var stored = localStorage.getItem('theme');
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="nav.role">// BACKEND ENGINEER</span></div>
+  <nav>
+    <a href="#log" data-i18n="nav.experience">Experience</a>
+    <a href="#industries" data-i18n="nav.industries">Industries</a>
+    <a href="#stack" data-i18n="nav.stack">Stack</a>
+    <a href="#contact" data-i18n="nav.contact">Contact</a>
+  </nav>
+  <div class="topbar-controls">
+    <div class="lang-switch mono" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="es">ES</button>
+      <button type="button" class="lang-btn" data-lang="ca">CA</button>
+    </div>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+      <span class="theme-icon" aria-hidden="true">☾</span>
+    </button>
+  </div>
+</div>
+
+<header class="hero" id="top">
+  <div class="hero-inner reveal">
+    <p class="eyebrow" data-i18n="hero.eyebrow">Statement of work</p>
+    <h1 data-i18n="hero.h1">Four industries. One discipline: build for what breaks.</h1>
+    <p class="lede" data-i18n="hero.lede" data-i18n-html>Backend engineer with <strong>7+ years</strong> across banking, automotive, public administration and travel-tech. The domain changes every time — the focus on systems that hold up under real conditions doesn't. Currently leading backend integrations at Neobookings.</p>
+    <div class="cta-row">
+      <a href="#log" class="btn-primary" data-i18n="hero.ctaLog">View the log ↓</a>
+      <a href="mailto:albeertus3@hotmail.com" class="btn-ghost" data-i18n="hero.ctaEmail">Email me</a>
+    </div>
+  </div>
+
+  <div class="ticker reveal">
+    <div class="tick">
+      <span class="tick-value mono">7+</span>
+      <span class="tick-label" data-i18n="ticker.years">years across banking, automotive, public sector &amp; travel-tech</span>
+    </div>
+    <div class="tick">
+      <span class="tick-value mono">7</span>
+      <span class="tick-label" data-i18n="ticker.companies">companies and teams</span>
+    </div>
+    <div class="tick">
+      <span class="tick-value mono">2</span>
+      <span class="tick-label" data-i18n="ticker.legacy">legacy systems modernized end-to-end</span>
+    </div>
+    <div class="tick">
+      <span class="tick-value mono">0</span>
+      <span class="tick-label" data-i18n="ticker.tolerance">tolerance for inconsistent state in distributed systems</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section id="log" class="section log-section">
+    <div class="section-head reveal">
+      <p class="eyebrow" data-i18n="log.eyebrow">01 — Track record</p>
+      <h2 data-i18n="log.h2">Experience</h2>
+    </div>
+
+    <ol class="ledger reveal">
+      <li class="entry">
+        <div class="entry-when mono" data-i18n="entry1.when">2023 — PRESENT</div>
+        <div class="entry-body">
+          <div class="entry-top">
+            <h3>Neobookings</h3>
+            <span class="status status-active mono"><i class="dot"></i><span data-i18n="status.active">ACTIVE</span></span>
+          </div>
+          <p class="entry-role" data-i18n="entry1.role">Senior Backend Engineer</p>
+          <p class="entry-desc" data-i18n="entry1.desc">Own backend integrations for a B2B travel-tech platform — payments, PMS connectivity and the loyalty program — after helping split a legacy monolith into domain services.</p>
+          <div class="entry-stack mono">
+            <span>Java 14–21</span><span>Spring Boot</span><span>PMS Integrations</span><span>Loyalty Systems</span>
+          </div>
+          <details class="entry-more">
+            <summary><span class="arrow">▾</span><span class="toggle-label">Show more</span></summary>
+            <div class="entry-more-body">
+              <p data-i18n="entry1.more1">Leading the unification of 18+ external payment providers (Stripe, Redsys, Adyen, OpenPay, PlaceToPay and more) into one resilient flow, with database-level idempotency to eliminate duplicate transactions under concurrency.</p>
+              <p data-i18n="entry1.more2">Designed and built the loyalty program from scratch, and integrated multiple external Property Management Systems (PMS) to keep inventory and bookings in sync across the platform.</p>
+              <p data-i18n="entry1.more3">Contributed to splitting a legacy monolith into Payments, Loyalty and Inventory services through event storming, and mentors newer developers through onboarding and pair programming.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li class="entry">
+        <div class="entry-when mono">2022 — 2023</div>
+        <div class="entry-body">
+          <div class="entry-top">
+            <h3>SEAT Code</h3>
+            <span class="status status-settled mono"><span data-i18n="status.settled">SETTLED</span></span>
+          </div>
+          <p class="entry-role" data-i18n="entry2.role">Backend Developer — My SEAT App</p>
+          <p class="entry-desc" data-i18n="entry2.desc">Built and maintained REST APIs powering remote vehicle control and telemetry for a connected-car mobile app, keeping data consistent across asynchronous, distributed sources.</p>
+          <div class="entry-stack mono">
+            <span>Java</span><span>REST APIs</span><span>Distributed Systems</span>
+          </div>
+          <details class="entry-more">
+            <summary><span class="arrow">▾</span><span class="toggle-label">Show more</span></summary>
+            <div class="entry-more-body">
+              <p data-i18n="entry2.more1">Worked within a distributed architecture where vehicle sensors sent data to backend services, which exposed it through APIs consumed by the mobile app. Focused on implementing business logic for vehicle status, remote actions and telemetry data.</p>
+              <p data-i18n="entry2.more2">Though the project was in a maintenance phase, it gave deep exposure to distributed system design, service communication and how domain boundaries emerge in real systems — foundational for the integration work that followed at Neobookings.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li class="entry">
+        <div class="entry-when mono">2021 — 2022</div>
+        <div class="entry-body">
+          <div class="entry-top">
+            <h3>Generalitat de Catalunya</h3>
+            <span class="status status-settled mono"><span data-i18n="status.settled">SETTLED</span></span>
+          </div>
+          <p class="entry-role" data-i18n="entry3.role">Full Stack Developer (via CAS Training)</p>
+          <p class="entry-desc" data-i18n="entry3.desc">Modernized a legacy fiscal-declaration platform for the agricultural sector — migrating AngularJS to Angular, hardening the Spring backend, and translating stakeholder requirements directly into shipped features.</p>
+          <div class="entry-stack mono">
+            <span>Angular</span><span>Spring</span><span>Legacy Modernization</span>
+          </div>
+          <details class="entry-more">
+            <summary><span class="arrow">▾</span><span class="toggle-label">Show more</span></summary>
+            <div class="entry-more-body">
+              <p data-i18n="entry3.more1">Took on a hybrid role combining development, technical decision-making and coordination, working within a legacy system used by farmers and livestock professionals to submit and manage fiscal declarations.</p>
+              <p data-i18n="entry3.more2">Participated directly in technical and functional requirement definition with stakeholders, and supported junior developers while contributing to solution design — strengthening the ability to navigate ambiguous, multi-stakeholder environments and turn business requirements into shipped technical decisions.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li class="entry">
+        <div class="entry-when mono" data-i18n="entry4.when">MAY 2021 — JUN 2021</div>
+        <div class="entry-body">
+          <div class="entry-top">
+            <h3>Cabsa Digital Solutions</h3>
+            <span class="status status-settled mono"><span data-i18n="status.settled">SETTLED</span></span>
+          </div>
+          <p class="entry-role" data-i18n="entry4.role">Backend Developer · Castelldefels</p>
+          <p class="entry-desc" data-i18n="entry4.desc">Backend developer also contributing to Angular front-end work on insurance-sector projects for Catalana Occident.</p>
+          <div class="entry-stack mono">
+            <span>Angular</span><span>Backend</span>
+          </div>
+          <details class="entry-more">
+            <summary><span class="arrow">▾</span><span class="toggle-label">Show more</span></summary>
+            <div class="entry-more-body">
+              <p data-i18n="entry4.more1">Two-month engagement combining backend development with hands-on Angular work for Catalana Occident, getting exposure to how insurance-sector platforms structure data and workflows between backend services and client-facing interfaces.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li class="entry">
+        <div class="entry-when mono" data-i18n="entry5.when">NOV 2019 — MAY 2021</div>
+        <div class="entry-body">
+          <div class="entry-top">
+            <h3>CaixaBank</h3>
+            <span class="status status-settled mono"><span data-i18n="status.settled">SETTLED</span></span>
+          </div>
+          <p class="entry-role" data-i18n="entry5.role">Frontend Developer — via Tenea Tecnologías, then internal at DXC Technology</p>
+          <p class="entry-desc" data-i18n="entry5.desc">Built the dashboard business clients use to manage financial operations — starting as an external contractor and earning a place on DXC Technology's internal team.</p>
+          <div class="entry-stack mono">
+            <span>JSP</span><span>API Integration</span><span>UX</span>
+          </div>
+          <details class="entry-more">
+            <summary><span class="arrow">▾</span><span class="toggle-label">Show more</span></summary>
+            <div class="entry-more-body">
+              <p data-i18n="entry5.more1">Joined the project as an external contractor placed through Tenea Tecnologías, working inside DXC Technology's team on a digital banking dashboard for business clients. After proving his work over several months, DXC brought him on directly as internal staff — continuing on the same project.</p>
+              <p data-i18n="entry5.more2">Focused on implementing UI components from design specs (JSP-based architecture), integrating frontend logic with backend APIs to display real-time financial data, and reducing friction in key operations — reinforcing how much backend data contracts shape frontend usability.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li class="entry">
+        <div class="entry-when mono">JUL 2019 — OCT 2019</div>
+        <div class="entry-body">
+          <div class="entry-top">
+            <h3>Setting Consultoria</h3>
+            <span class="status status-settled mono"><span data-i18n="status.settled">SETTLED</span></span>
+          </div>
+          <p class="entry-role" data-i18n="entry6.role">Java Developer</p>
+          <p class="entry-desc" data-i18n="entry6.desc">Maintenance developer on Java Swing desktop applications wired directly to the database, resolving tickets in a Kanban flow.</p>
+          <div class="entry-stack mono">
+            <span>Java Swing</span><span>Kanban</span>
+          </div>
+          <details class="entry-more">
+            <summary><span class="arrow">▾</span><span class="toggle-label">Show more</span></summary>
+            <div class="entry-more-body">
+              <p data-i18n="entry6.more1">Worked on thick-client Java Swing interfaces connected directly to the database with no backend layer in between — a different paradigm from the API-first, service-oriented work that came both before and after in his career.</p>
+              <p data-i18n="entry6.more2">Operated within a Kanban-driven maintenance project, picking up tickets and resolving them independently, which sharpened the ability to work efficiently within tightly scoped, ticket-based workflows.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+
+      <li class="entry">
+        <div class="entry-when mono" data-i18n="entry7.when">JUL 2018 — APR 2019</div>
+        <div class="entry-body">
+          <div class="entry-top">
+            <h3>SII Concatel</h3>
+            <span class="status status-settled mono"><span data-i18n="status.settled">SETTLED</span></span>
+          </div>
+          <p class="entry-role" data-i18n="entry7.role">Software Programmer · Barcelona</p>
+          <p class="entry-desc" data-i18n="entry7.desc">First professional role — junior developer on projects for Volkswagen Group España Distribución (VGED) and Grupo Planeta.</p>
+          <div class="entry-stack mono">
+            <span>Spring Boot</span><span>Liquibase</span><span>Testing</span><span>Agile</span>
+          </div>
+          <details class="entry-more">
+            <summary><span class="arrow">▾</span><span class="toggle-label">Show more</span></summary>
+            <div class="entry-more-body">
+              <p data-i18n="entry7.more1">The starting point of a backend career: as a junior developer discovering the professional world, this is where fundamentals like Spring Boot, Liquibase-managed database migrations, testing tools and agile methodologies were first put into practice on real client work for VGED and Grupo Planeta.</p>
+              <p data-i18n="entry7.more2">Everything since — from legacy modernization to payment infrastructure — has built on what got picked up here first.</p>
+            </div>
+          </details>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section id="industries" class="section industries-section">
+    <div class="section-head reveal">
+      <p class="eyebrow" data-i18n="industries.eyebrow">02 — Industries</p>
+      <h2 data-i18n="industries.h2">Same discipline, different playing fields</h2>
+    </div>
+
+    <div class="industry-grid reveal">
+      <div class="industry-card">
+        <p class="industry-tag" data-i18n="industry.travel.tag">Travel-tech</p>
+        <p class="industry-company">Neobookings</p>
+        <p class="industry-note" data-i18n="industry.travel.note">Payments, PMS connectivity and loyalty for a B2B hotel distribution platform.</p>
+      </div>
+      <div class="industry-card">
+        <p class="industry-tag" data-i18n="industry.automotive.tag">Automotive</p>
+        <p class="industry-company">SEAT Code</p>
+        <p class="industry-note" data-i18n="industry.automotive.note">Backend APIs for remote vehicle control and telemetry on a connected-car app.</p>
+      </div>
+      <div class="industry-card">
+        <p class="industry-tag" data-i18n="industry.public.tag">Public sector</p>
+        <p class="industry-company">Generalitat de Catalunya</p>
+        <p class="industry-note" data-i18n="industry.public.note">Modernized a legacy fiscal-declaration platform for the agricultural sector.</p>
+      </div>
+      <div class="industry-card">
+        <p class="industry-tag" data-i18n="industry.banking.tag">Banking</p>
+        <p class="industry-company">CaixaBank</p>
+        <p class="industry-note" data-i18n="industry.banking.note">Frontend for a business dashboard managing financial operations.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack" class="section stack-section">
+    <div class="section-head reveal">
+      <p class="eyebrow" data-i18n="stack.eyebrow">03 — Balance sheet</p>
+      <h2 data-i18n="stack.h2">Stack</h2>
+    </div>
+
+    <div class="ledger-columns reveal">
+      <div class="ledger-col">
+        <h3 data-i18n="stack.runtime">Runtime</h3>
+        <ul>
+          <li>Java</li>
+          <li>Kotlin</li>
+          <li>Spring Boot</li>
+          <li>REST APIs</li>
+          <li>Event-driven architecture</li>
+          <li>Distributed systems</li>
+        </ul>
+      </div>
+      <div class="ledger-col">
+        <h3 data-i18n="stack.infrastructure">Infrastructure</h3>
+        <ul>
+          <li>MySQL / SQL</li>
+          <li>RabbitMQ</li>
+          <li>Redis</li>
+          <li>Quartz</li>
+        </ul>
+      </div>
+      <div class="ledger-col">
+        <h3 data-i18n="stack.interface">Interface</h3>
+        <ul>
+          <li>Angular</li>
+          <li>JSP</li>
+          <li>OpenAPI spec</li>
+        </ul>
+      </div>
+      <div class="ledger-col">
+        <h3 data-i18n="stack.practice">Practice</h3>
+        <ul>
+          <li data-i18n="practice.item1">Clean code</li>
+          <li data-i18n="practice.item2">API-first design</li>
+          <li data-i18n="practice.item3">Event storming</li>
+          <li data-i18n="practice.item4">Idempotent by default</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="languages reveal" data-i18n="languages">Spanish (native) · Catalan (native) · English (professional working proficiency)</p>
+  </section>
+
+  <section id="contact" class="section contact-section">
+    <div class="tear reveal"><span data-i18n="contact.tear">✂ TEAR HERE</span></div>
+    <div class="section-head center reveal">
+      <p class="eyebrow" data-i18n="contact.eyebrow">04 — Authorize</p>
+      <h2 data-i18n="contact.h2">Let's talk about what you're building.</h2>
+      <p class="contact-lede" data-i18n="contact.lede">Open to conversations about backend engineering and distributed systems, across any industry.</p>
+    </div>
+    <div class="cta-row center reveal">
+      <a href="mailto:albeertus3@hotmail.com" class="btn-primary">albeertus3@hotmail.com</a>
+      <a href="https://www.linkedin.com/in/albertortells" target="_blank" rel="noopener" class="btn-ghost">LinkedIn ↗</a>
+      <a href="https://github.com/albertortells" target="_blank" rel="noopener" class="btn-ghost">GitHub ↗</a>
+    </div>
+    <div class="barcode reveal" aria-hidden="true"></div>
+    <p class="foot-note reveal" data-i18n="contact.footnote">Receipt No. 000-ALBERT-ORTELLS · Thank you for scrolling</p>
+  </section>
+
+</main>
+
+<script src="translations.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
