@@ -15,6 +15,7 @@ Personal portfolio site. Vanilla HTML/CSS/JS, no framework, no build step — cl
 | `script.js` | i18n engine (language detection, applying translations, updating the URL) and theme engine (detection, toggle, syncing with OS changes), plus the scroll-reveal `IntersectionObserver` and the experience entries' "show more" toggles. |
 | `translations.js` | The `TRANSLATIONS` dictionary — one object per language (`en`, `es`, `ca`), each key matching a `data-i18n` path in `index.html`. |
 | `favicon.svg` | Site icon. |
+| `fonts/` | Self-hosted `.woff2` files (IBM Plex Mono, IBM Plex Sans, Roboto Slab — Latin subset). Loaded entirely from this domain, no request ever reaches Google's servers. |
 
 ## Running locally
 
