@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cómo resolví la prueba técnica de Inditex — Albert Ortells</title>
+<meta name="description" content="Cómo resolví la prueba técnica de Java/Spring Boot de Inditex: un servicio de consulta de tarifas de precios, con la regla de prioridad explícita y tests unitarios por capas.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cómo resolví la prueba técnica de Inditex">
+<meta property="og:description" content="Un servicio de consulta de tarifas de precios, con la regla de prioridad explícita y tests unitarios por capas.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cómo resolví la prueba técnica de Inditex">
+<meta name="twitter:description" content="Un servicio de consulta de tarifas de precios, con la regla de prioridad explícita y tests unitarios por capas.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+    var stored = match ? decodeURIComponent(match[1]) : null;
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body data-page="inditex">
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="inditex.nav.role">// TECH TESTS</span></div>
+  <nav>
+    <a href="../" data-i18n="inditex.nav.cases">← Casos</a>
+    <a href="https://albertortells.cat">Portfolio</a>
+  </nav>
+  <div class="topbar-controls">
+    <div class="lang-switch mono" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="es">ES</button>
+      <button type="button" class="lang-btn" data-lang="ca">CA</button>
+    </div>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+      <span class="theme-icon" aria-hidden="true">☾</span>
+    </button>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner reveal">
+    <p class="eyebrow" data-i18n="inditex.hero.eyebrow">CASO · INDITEX</p>
+    <h1 data-i18n="inditex.hero.h1">Cómo resolví la prueba técnica de Inditex</h1>
+    <p class="lede">
+      Java · Spring Boot · H2 ·
+      <span class="status status-settled" style="margin-left:0.25rem;"><span class="dot"></span><span data-i18n="inditex.status.settled">RESUELTA</span></span>
+    </p>
+  </div>
+</section>
+
+<section class="section reveal">
+<div class="story">
+
+<p data-i18n="inditex.story.p1">
+Todo empezó con un enunciado tras el proceso de selección de Inditex: una
+prueba técnica pequeña para ver cómo diseño y construyo un servicio. Nada de
+sistemas grandes ni de mucha funcionalidad — solo un endpoint de consulta
+sobre una tabla de precios, y una advertencia clara sobre qué se iba a
+valorar: diseño y construcción del servicio, calidad de código y resultados
+correctos en los tests.
+</p>
+
+<h2 data-i18n="inditex.story.challenge.h2">El reto</h2>
+<p data-i18n="inditex.story.challenge.p">El enunciado pedía tres cosas muy concretas:</p>
+<ul>
+  <li data-i18n="inditex.story.challenge.li1">Un endpoint REST que, dados una fecha de aplicación, un producto y una cadena, devuelva la tarifa de precios que corresponde aplicar.</li>
+  <li data-i18n="inditex.story.challenge.li2">Una base de datos en memoria (H2) inicializada con los cuatro registros de ejemplo del enunciado.</li>
+  <li data-i18n="inditex.story.challenge.li3">Tests que validasen cinco peticiones concretas contra esos datos: distintas horas de los días 14, 15 y 16 de junio de 2020 para el mismo producto y la misma cadena.</li>
+</ul>
+<p data-i18n="inditex.story.challenge.p2">
+Con eso en mente, y sabiendo que el foco estaba en la calidad del código más
+que en la cantidad de funcionalidad, me puse manos a la obra.
+</p>
+
+<h2 data-i18n="inditex.story.build.h2">Construir de dentro hacia afuera</h2>
+<p data-i18n="inditex.story.build.p1" data-i18n-html>
+No arranqué por el controlador. Empecé modelando el dominio: un <code>record</code>
+<code>Price</code> que refleja la tabla, y dos DTOs, <code>PriceQueryRequest</code> y
+<code>PriceQueryResponse</code>, con la entrada y la salida exactas que pedía el
+enunciado. Solo después construí el acceso a datos, el servicio y por último
+el controlador. Empezar por el dominio evita diseñar el modelo en función de
+cómo llega la petición HTTP.
+</p>
+<p data-i18n="inditex.story.build.p2" data-i18n-html>
+Para el acceso a datos elegí <code>JdbcTemplate</code> en vez de JPA/Hibernate: es
+una única consulta sobre una única tabla, sin relaciones entre entidades, así
+que meter un ORM completo habría sido más peso del que el problema pedía. El
+repositorio quedó reducido a una consulta que filtra por marca, producto y
+rango de fechas, ordenada por prioridad.
+</p>
+<p data-i18n="inditex.story.build.p3" data-i18n-html>
+Encima de eso, un <code>PriceService</code> que aplica la regla de negocio y
+construye la respuesta, y un <code>PriceController</code> con un único
+<code>GET /prices</code> que solo recibe parámetros y delega.
+</p>
+
+<h2 data-i18n="inditex.story.priority.h2">La decisión que más pesé: dónde vive la prioridad</h2>
+<p data-i18n="inditex.story.priority.p1" data-i18n-html>
+El enunciado deja clara la regla: si dos tarifas coinciden en la misma fecha,
+gana la de mayor prioridad. Podría haberme apoyado en el propio
+<code>ORDER BY PRIORITY DESC</code> de la consulta y quedarme con la primera
+fila que llegara. Funciona, pero esconde una regla de negocio importante
+dentro de una query SQL, donde nadie la ve a simple vista y nadie la testea
+de forma aislada.
+</p>
+<p data-i18n="inditex.story.priority.p2" data-i18n-html>
+Preferí resolverlo de forma explícita en el servicio, comparando la prioridad
+de los candidatos que devuelve el repositorio. Es un poco más de código, pero
+deja la regla donde se puede leer, tocar y testear sin depender de cómo esté
+escrita la query. Apliqué el mismo criterio al caso de "no hay ninguna tarifa
+aplicable": en vez de devolver <code>null</code> o una lista vacía, lo
+convertí en una excepción propia, para que ese caso no se pueda pasar por
+alto en ninguna capa superior.
+</p>
+
+<h2 data-i18n="inditex.story.tests.h2">Verificarlo con tests</h2>
+<p data-i18n="inditex.story.tests.p1">
+El propio enunciado pedía tests para las cinco peticiones de ejemplo, y
+además se me pidió explícitamente que fueran solo tests unitarios, sin
+integración ni end-to-end. Así que cada capa se testeó a su propio nivel: el
+repositorio contra una base H2 real en memoria, porque ahí lo que quiero
+validar es que el SQL es correcto; el servicio y el controlador con sus
+dependencias simuladas (Mockito), porque su lógica no depende de si hay una
+base de datos o un servidor HTTP real detrás.
+</p>
+<p data-i18n="inditex.story.tests.p2">
+Cubrí el listado de una tarifa única, el solapamiento de varias tarifas con
+la selección por prioridad, el caso sin resultados y el de producto
+inexistente. Como comprobación final, aparte de la batería automática,
+levanté la aplicación real y lancé a mano los cinco casos del enunciado
+contra el endpoint: los cinco devolvieron exactamente la tarifa y el precio
+esperados.
+</p>
+
+<h2 data-i18n="inditex.story.docs.h2">Dejarlo documentado</h2>
+<p data-i18n="inditex.story.docs.p" data-i18n-html>
+Por último, volqué en el <code>README.md</code> el enunciado completo, el
+stack elegido y por qué, cómo levantar la aplicación, cómo consultar el
+endpoint y cómo ejecutar los tests, para que cualquiera pueda arrancar el
+proyecto y verificar el resultado sin más contexto que ese fichero.
+</p>
+
+<h2 data-i18n="inditex.story.result.h2">El resultado</h2>
+<p data-i18n="inditex.story.result.p">
+Una API pequeña, con la regla de negocio en un sitio explícito y testeable, y
+sin más complejidad de la que el problema pedía — que, al final, era justo el
+objetivo de la prueba.
+</p>
+
+<div class="cta-row">
+  <a href="https://github.com/albertortells/inditex-technical-test" class="btn-primary" target="_blank" rel="noopener" data-i18n="inditex.cta.github">Ver el código en GitHub ↗</a>
+  <a href="../" class="btn-ghost" data-i18n="inditex.cta.back">← Ver otros casos</a>
+</div>
+
+</div>
+</section>
+
+<script src="../translations.js"></script>
+<script src="../script.js"></script>
+</body>
+</html>
