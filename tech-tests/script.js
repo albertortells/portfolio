@@ -22,10 +22,10 @@ function detectInitialLang() {
 
 function applyLanguage(lang) {
   currentLang = SUPPORTED_LANGS.includes(lang) ? lang : 'en';
-  const dict = TECH_TRANSLATIONS[currentLang][PAGE];
+  const dict = TECH_TRANSLATIONS[currentLang];
 
   document.documentElement.lang = currentLang;
-  document.title = dict.title;
+  document.title = dict[PAGE].title;
 
   document.querySelectorAll('[data-i18n]').forEach(function (el) {
     const value = getByPath(dict, el.getAttribute('data-i18n'));
