@@ -10,7 +10,7 @@ function detectInitialLang() {
   const urlLang = url.get('lang');
   if (urlLang && SUPPORTED_LANGS.includes(urlLang)) return urlLang;
 
-  const stored = localStorage.getItem('lang');
+  const stored = getCookie('lang');
   if (stored && SUPPORTED_LANGS.includes(stored)) return stored;
 
   const browserLang = (navigator.language || 'en').slice(0, 2).toLowerCase();
@@ -56,7 +56,7 @@ function applyLanguage(lang) {
 
 function setLanguage(lang) {
   applyLanguage(lang);
-  localStorage.setItem('lang', currentLang);
+  setCookie('lang', currentLang);
 
   const url = new URL(window.location.href);
   url.searchParams.set('lang', currentLang);
@@ -71,7 +71,7 @@ document.querySelectorAll('.lang-btn').forEach(function (btn) {
 
 setLanguage(detectInitialLang());
 
-function themeCookieDomain() {
+function sharedCookieDomain() {
   return location.hostname.endsWith('albertortells.cat') ? '; domain=.albertortells.cat' : '';
 }
 
@@ -81,7 +81,7 @@ function getCookie(name) {
 }
 
 function setCookie(name, value) {
-  document.cookie = name + '=' + encodeURIComponent(value) + '; path=/; max-age=' + (365 * 24 * 60 * 60) + themeCookieDomain() + '; samesite=lax';
+  document.cookie = name + '=' + encodeURIComponent(value) + '; path=/; max-age=' + (365 * 24 * 60 * 60) + sharedCookieDomain() + '; samesite=lax';
 }
 
 const themeToggle = document.getElementById('themeToggle');
