@@ -21,14 +21,19 @@
   })();
 </script>
 </head>
-<body>
+<body data-page="cards">
 
 <div class="topbar">
-  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span>// TECH TESTS</span></div>
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="cards.nav.role">// TECH TESTS</span></div>
   <nav>
-    <a href="https://albertortells.cat">← Portfolio</a>
+    <a href="https://albertortells.cat" data-i18n="cards.nav.back">← Portfolio</a>
   </nav>
   <div class="topbar-controls">
+    <div class="lang-switch mono" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="es">ES</button>
+      <button type="button" class="lang-btn" data-lang="ca">CA</button>
+    </div>
     <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
       <span class="theme-icon" aria-hidden="true">☾</span>
     </button>
@@ -37,9 +42,9 @@
 
 <section class="hero">
   <div class="hero-inner reveal">
-    <p class="eyebrow">DOSSIER · PRUEBAS TÉCNICAS</p>
-    <h1>Cómo resuelvo pruebas técnicas</h1>
-    <p class="lede">
+    <p class="eyebrow" data-i18n="cards.hero.eyebrow">DOSSIER · PRUEBAS TÉCNICAS</p>
+    <h1 data-i18n="cards.hero.h1">Cómo resuelvo pruebas técnicas</h1>
+    <p class="lede" data-i18n="cards.hero.lede" data-i18n-html>
       Cada prueba técnica que he resuelto, contada como lo que realmente es:
       un enunciado, unas decisiones de diseño y un resultado que se puede
       revisar. <strong>Sin adornos</strong> — el enunciado, cómo se resolvió y el código final.
@@ -49,33 +54,34 @@
 
 <section class="section">
   <div class="section-head reveal">
-    <p class="eyebrow">Casos</p>
-    <h2>Selecciona un caso</h2>
+    <p class="eyebrow" data-i18n="cards.section.eyebrow">Casos</p>
+    <h2 data-i18n="cards.section.h2">Selecciona un caso</h2>
   </div>
   <div class="industry-grid reveal">
     <a class="industry-card" href="cabsa/">
       <p class="industry-tag">Java · Spring Boot</p>
       <p class="industry-company">CABSA</p>
-      <p class="industry-note">API de animales: endpoints REST, tests con JUnit 5 + Mockito, y limpieza de código como foco principal.</p>
-      <span class="status status-settled" style="margin-top:0.875rem;"><span class="dot"></span>RESUELTA</span>
+      <p class="industry-note" data-i18n="cards.card.note">API de animales: endpoints REST, tests con JUnit 5 + Mockito, y limpieza de código como foco principal.</p>
+      <span class="status status-settled" style="margin-top:0.875rem;"><span class="dot"></span><span data-i18n="cards.status.settled">RESUELTA</span></span>
     </a>
   </div>
 </section>
 
 <section class="section contact-section">
-  <div class="tear reveal"><span>✂ TEAR HERE</span></div>
+  <div class="tear reveal"><span data-i18n="cards.contact.tear">✂ TEAR HERE</span></div>
   <div class="section-head center reveal">
-    <p class="eyebrow">Volver</p>
-    <h2>¿Buscas el resto del recorrido?</h2>
+    <p class="eyebrow" data-i18n="cards.contact.eyebrow">Volver</p>
+    <h2 data-i18n="cards.contact.h2">¿Buscas el resto del recorrido?</h2>
   </div>
-  <p class="contact-lede reveal">El portfolio completo está en albertortells.cat.</p>
+  <p class="contact-lede reveal" data-i18n="cards.contact.lede">El portfolio completo está en albertortells.cat.</p>
   <div class="cta-row center reveal">
-    <a href="https://albertortells.cat" class="btn-primary">Ver el portfolio ↗</a>
+    <a href="https://albertortells.cat" class="btn-primary" data-i18n="cards.contact.cta">Ver el portfolio ↗</a>
   </div>
   <div class="barcode reveal" aria-hidden="true"></div>
-  <p class="foot-note reveal">Dossier de pruebas técnicas · Albert Ortells</p>
+  <p class="foot-note reveal" data-i18n="cards.contact.footnote">Dossier de pruebas técnicas · Albert Ortells</p>
 </section>
 
+<script src="translations.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

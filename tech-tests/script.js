@@ -1,3 +1,66 @@
+const SUPPORTED_LANGS = ['en', 'es', 'ca'];
+const PAGE = document.body.getAttribute('data-page');
+let currentLang = 'en';
+
+function getByPath(obj, path) {
+  return path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+}
+
+function detectInitialLang() {
+  const url = new URLSearchParams(window.location.search);
+  const urlLang = url.get('lang');
+  if (urlLang && SUPPORTED_LANGS.includes(urlLang)) return urlLang;
+
+  const stored = localStorage.getItem('lang');
+  if (stored && SUPPORTED_LANGS.includes(stored)) return stored;
+
+  const browserLang = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (SUPPORTED_LANGS.includes(browserLang)) return browserLang;
+
+  return 'en';
+}
+
+function applyLanguage(lang) {
+  currentLang = SUPPORTED_LANGS.includes(lang) ? lang : 'en';
+  const dict = TECH_TRANSLATIONS[currentLang][PAGE];
+
+  document.documentElement.lang = currentLang;
+  document.title = dict.title;
+
+  document.querySelectorAll('[data-i18n]').forEach(function (el) {
+    const value = getByPath(dict, el.getAttribute('data-i18n'));
+    if (value === undefined) return;
+    if (el.hasAttribute('data-i18n-html')) {
+      el.innerHTML = value;
+    } else {
+      el.textContent = value;
+    }
+  });
+
+  document.querySelectorAll('.lang-btn').forEach(function (btn) {
+    const isActive = btn.getAttribute('data-lang') === currentLang;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
+}
+
+function setLanguage(lang) {
+  applyLanguage(lang);
+  localStorage.setItem('lang', currentLang);
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('lang', currentLang);
+  window.history.replaceState({}, '', url);
+}
+
+document.querySelectorAll('.lang-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    setLanguage(btn.getAttribute('data-lang'));
+  });
+});
+
+setLanguage(detectInitialLang());
+
 const themeToggle = document.getElementById('themeToggle');
 const themeIcon = themeToggle ? themeToggle.querySelector('.theme-icon') : null;
 const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');

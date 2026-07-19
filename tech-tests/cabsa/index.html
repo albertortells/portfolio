@@ -21,15 +21,20 @@
   })();
 </script>
 </head>
-<body>
+<body data-page="cabsa">
 
 <div class="topbar">
-  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span>// TECH TESTS</span></div>
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="cabsa.nav.role">// TECH TESTS</span></div>
   <nav>
-    <a href="../">← Casos</a>
+    <a href="../" data-i18n="cabsa.nav.cases">← Casos</a>
     <a href="https://albertortells.cat">Portfolio</a>
   </nav>
   <div class="topbar-controls">
+    <div class="lang-switch mono" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="es">ES</button>
+      <button type="button" class="lang-btn" data-lang="ca">CA</button>
+    </div>
     <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
       <span class="theme-icon" aria-hidden="true">☾</span>
     </button>
@@ -38,11 +43,11 @@
 
 <section class="hero">
   <div class="hero-inner reveal">
-    <p class="eyebrow">CASO · CABSA</p>
-    <h1>Cómo resolvimos la prueba técnica de CABSA</h1>
+    <p class="eyebrow" data-i18n="cabsa.hero.eyebrow">CASO · CABSA</p>
+    <h1 data-i18n="cabsa.hero.h1">Cómo resolvimos la prueba técnica de CABSA</h1>
     <p class="lede">
       Java · Spring Boot ·
-      <span class="status status-settled" style="margin-left:0.25rem;"><span class="dot"></span>RESUELTA</span>
+      <span class="status status-settled" style="margin-left:0.25rem;"><span class="dot"></span><span data-i18n="cabsa.status.settled">RESUELTA</span></span>
     </p>
   </div>
 </section>
@@ -50,7 +55,7 @@
 <section class="section reveal">
 <div class="story">
 
-<p>
+<p data-i18n="cabsa.story.p1" data-i18n-html>
 Todo empezó con un correo de CABSA tras la entrevista: una pequeña prueba
 técnica para ver cómo desarrollamos una solución y escribimos código. Nada de
 algoritmos imposibles ni maratones de programación — solo una API sencilla, un
@@ -59,21 +64,21 @@ esqueleto de Spring Boot ya arrancable, y una recomendación clara:
 funcionalidad en sí"</em>.
 </p>
 
-<h2>El reto</h2>
-<p>El enunciado pedía tres cosas muy concretas:</p>
+<h2 data-i18n="cabsa.story.challenge.h2">El reto</h2>
+<p data-i18n="cabsa.story.challenge.p">El enunciado pedía tres cosas muy concretas:</p>
 <ul>
-  <li>Devolver un listado de animales en JSON junto con lo que comen.</li>
-  <li>Poder buscar animales por nombre o por lo que comen.</li>
-  <li>Poder crear un nuevo tipo de comida.</li>
+  <li data-i18n="cabsa.story.challenge.li1">Devolver un listado de animales en JSON junto con lo que comen.</li>
+  <li data-i18n="cabsa.story.challenge.li2">Poder buscar animales por nombre o por lo que comen.</li>
+  <li data-i18n="cabsa.story.challenge.li3">Poder crear un nuevo tipo de comida.</li>
 </ul>
-<p>
+<p data-i18n="cabsa.story.challenge.p2">
 Con eso en mente, y sabiendo que el foco estaba en la calidad del código más
 que en la cantidad de funcionalidad, nos pusimos manos a la obra sobre el
 esqueleto proporcionado.
 </p>
 
-<h2>Construir sobre lo que ya había</h2>
-<p>
+<h2 data-i18n="cabsa.story.build.h2">Construir sobre lo que ya había</h2>
+<p data-i18n="cabsa.story.build.p" data-i18n-html>
 El esqueleto ya traía una arquitectura por capas esbozada. Completamos esa
 estructura de forma coherente: un <code>JungleController</code> con los tres
 endpoints REST, una capa de servicio (<code>AnimalService</code> /
@@ -84,13 +89,13 @@ API quedaron unificadas bajo un mismo envoltorio, <code>ApiResponse</code>, con
 estado, mensaje y datos.
 </p>
 
-<h2>Parar a limpiar antes de dar la prueba por terminada</h2>
-<p>
+<h2 data-i18n="cabsa.story.clean.h2">Parar a limpiar antes de dar la prueba por terminada</h2>
+<p data-i18n="cabsa.story.clean.p">
 Con la funcionalidad lista, tocaba hacer lo que realmente iban a valorar:
 revisar el código con ojo crítico. Dos cosas llamaron la atención:
 </p>
 <ul>
-  <li>
+  <li data-i18n="cabsa.story.clean.li1" data-i18n-html>
     El método de búsqueda por nombre y/o comida tenía tres bloques casi
     idénticos, repitiendo una y otra vez el mismo patrón de "buscar, comprobar
     si es nulo, construir la respuesta". Lo reescribimos en una única lógica,
@@ -99,7 +104,7 @@ revisar el código con ojo crítico. Dos cosas llamaron la atención:
     buscar por nombre y comida a la vez cuando solo uno de los dos existía en
     base de datos.
   </li>
-  <li>
+  <li data-i18n="cabsa.story.clean.li2">
     Encontramos una pequeña inconsistencia entre las dos entidades: la comida
     generaba su id automáticamente, pero el animal no, pese a que la columna en
     base de datos era igualmente autoincremental. Se alineó el criterio entre
@@ -107,8 +112,8 @@ revisar el código con ojo crítico. Dos cosas llamaron la atención:
   </li>
 </ul>
 
-<h2>Verificarlo con tests</h2>
-<p>
+<h2 data-i18n="cabsa.story.tests.h2">Verificarlo con tests</h2>
+<p data-i18n="cabsa.story.tests.p">
 Una vez cerrada la limpieza, tocaba demostrar —no solo asumir— que el
 comportamiento seguía siendo correcto. Añadimos una batería de tests unitarios
 sobre la capa de servicio con JUnit 5 y Mockito, mockeando los repositorios
@@ -118,8 +123,8 @@ encontrado", y muy especialmente el caso de regresión del error que acabábamos
 de corregir, para asegurarnos de que no volvería a aparecer.
 </p>
 
-<h2>Dejarlo todo documentado</h2>
-<p>
+<h2 data-i18n="cabsa.story.docs.h2">Dejarlo todo documentado</h2>
+<p data-i18n="cabsa.story.docs.p" data-i18n-html>
 Por último, separamos claramente el enunciado de la solución: un
 <code>README.md</code> que recoge fielmente lo que se pedía en la prueba, y un
 <code>SOLUTION.md</code> que explica cómo se resolvió — arquitectura,
@@ -127,21 +132,22 @@ endpoints, decisiones de diseño y cómo poner en marcha tanto la aplicación
 como los tests.
 </p>
 
-<h2>El resultado</h2>
-<p>
+<h2 data-i18n="cabsa.story.result.h2">El resultado</h2>
+<p data-i18n="cabsa.story.result.p">
 Una API pequeña, ordenada y probada, que cumple lo que pedía CABSA sin más
 complejidad de la necesaria — que, al final, era justo el objetivo de la
 prueba.
 </p>
 
 <div class="cta-row">
-  <a href="https://github.com/albertortells/cabsa-javadevelopers" class="btn-primary" target="_blank" rel="noopener">Ver el código en GitHub ↗</a>
-  <a href="../" class="btn-ghost">← Ver otros casos</a>
+  <a href="https://github.com/albertortells/cabsa-javadevelopers" class="btn-primary" target="_blank" rel="noopener" data-i18n="cabsa.cta.github">Ver el código en GitHub ↗</a>
+  <a href="../" class="btn-ghost" data-i18n="cabsa.cta.back">← Ver otros casos</a>
 </div>
 
 </div>
 </section>
 
+<script src="../translations.js"></script>
 <script src="../script.js"></script>
 </body>
 </html>
