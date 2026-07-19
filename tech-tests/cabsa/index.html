@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cómo resolvimos la prueba técnica de CABSA — Albert Ortells</title>
+<meta name="description" content="Cómo resolvimos la prueba técnica de Java/Spring Boot de CABSA: arquitectura por capas, limpieza de código y tests con JUnit 5 y Mockito.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cómo resolvimos la prueba técnica de CABSA">
+<meta property="og:description" content="Arquitectura por capas, limpieza de código y tests con JUnit 5 y Mockito.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cómo resolvimos la prueba técnica de CABSA">
+<meta name="twitter:description" content="Arquitectura por capas, limpieza de código y tests con JUnit 5 y Mockito.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var stored = localStorage.getItem('theme');
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span>// TECH TESTS</span></div>
+  <nav>
+    <a href="../">← Casos</a>
+    <a href="https://albertortells.cat">Portfolio</a>
+  </nav>
+  <div class="topbar-controls">
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+      <span class="theme-icon" aria-hidden="true">☾</span>
+    </button>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner reveal">
+    <p class="eyebrow">CASO · CABSA</p>
+    <h1>Cómo resolvimos la prueba técnica de CABSA</h1>
+    <p class="lede">
+      Java · Spring Boot ·
+      <span class="status status-settled" style="margin-left:0.25rem;"><span class="dot"></span>RESUELTA</span>
+    </p>
+  </div>
+</section>
+
+<section class="section reveal">
+<div class="story">
+
+<p>
+Todo empezó con un correo de CABSA tras la entrevista: una pequeña prueba
+técnica para ver cómo desarrollamos una solución y escribimos código. Nada de
+algoritmos imposibles ni maratones de programación — solo una API sencilla, un
+esqueleto de Spring Boot ya arrancable, y una recomendación clara:
+<em>"valoraremos más la estructura de código y limpieza del mismo que la
+funcionalidad en sí"</em>.
+</p>
+
+<h2>El reto</h2>
+<p>El enunciado pedía tres cosas muy concretas:</p>
+<ul>
+  <li>Devolver un listado de animales en JSON junto con lo que comen.</li>
+  <li>Poder buscar animales por nombre o por lo que comen.</li>
+  <li>Poder crear un nuevo tipo de comida.</li>
+</ul>
+<p>
+Con eso en mente, y sabiendo que el foco estaba en la calidad del código más
+que en la cantidad de funcionalidad, nos pusimos manos a la obra sobre el
+esqueleto proporcionado.
+</p>
+
+<h2>Construir sobre lo que ya había</h2>
+<p>
+El esqueleto ya traía una arquitectura por capas esbozada. Completamos esa
+estructura de forma coherente: un <code>JungleController</code> con los tres
+endpoints REST, una capa de servicio (<code>AnimalService</code> /
+<code>AnimalServiceImpl</code>) con la lógica de negocio, repositorios JPA para
+animales y comida, y un DTO (<code>AnimalDto</code>) para no exponer
+directamente el modelo persistido en las respuestas. Todas las respuestas de la
+API quedaron unificadas bajo un mismo envoltorio, <code>ApiResponse</code>, con
+estado, mensaje y datos.
+</p>
+
+<h2>Parar a limpiar antes de dar la prueba por terminada</h2>
+<p>
+Con la funcionalidad lista, tocaba hacer lo que realmente iban a valorar:
+revisar el código con ojo crítico. Dos cosas llamaron la atención:
+</p>
+<ul>
+  <li>
+    El método de búsqueda por nombre y/o comida tenía tres bloques casi
+    idénticos, repitiendo una y otra vez el mismo patrón de "buscar, comprobar
+    si es nulo, construir la respuesta". Lo reescribimos en una única lógica,
+    mucho más corta y fácil de leer. De paso, esa simplificación destapó y
+    corrigió un <code>NullPointerException</code> silencioso que ocurría al
+    buscar por nombre y comida a la vez cuando solo uno de los dos existía en
+    base de datos.
+  </li>
+  <li>
+    Encontramos una pequeña inconsistencia entre las dos entidades: la comida
+    generaba su id automáticamente, pero el animal no, pese a que la columna en
+    base de datos era igualmente autoincremental. Se alineó el criterio entre
+    ambas.
+  </li>
+</ul>
+
+<h2>Verificarlo con tests</h2>
+<p>
+Una vez cerrada la limpieza, tocaba demostrar —no solo asumir— que el
+comportamiento seguía siendo correcto. Añadimos una batería de tests unitarios
+sobre la capa de servicio con JUnit 5 y Mockito, mockeando los repositorios
+para no depender de una base de datos real. Cubrimos el listado completo, la
+búsqueda por nombre, por comida y por ambos a la vez, los casos de "no
+encontrado", y muy especialmente el caso de regresión del error que acabábamos
+de corregir, para asegurarnos de que no volvería a aparecer.
+</p>
+
+<h2>Dejarlo todo documentado</h2>
+<p>
+Por último, separamos claramente el enunciado de la solución: un
+<code>README.md</code> que recoge fielmente lo que se pedía en la prueba, y un
+<code>SOLUTION.md</code> que explica cómo se resolvió — arquitectura,
+endpoints, decisiones de diseño y cómo poner en marcha tanto la aplicación
+como los tests.
+</p>
+
+<h2>El resultado</h2>
+<p>
+Una API pequeña, ordenada y probada, que cumple lo que pedía CABSA sin más
+complejidad de la necesaria — que, al final, era justo el objetivo de la
+prueba.
+</p>
+
+<div class="cta-row">
+  <a href="https://github.com/albertortells/cabsa-javadevelopers" class="btn-primary" target="_blank" rel="noopener">Ver el código en GitHub ↗</a>
+  <a href="../" class="btn-ghost">← Ver otros casos</a>
+</div>
+
+</div>
+</section>
+
+<script src="../script.js"></script>
+</body>
+</html>

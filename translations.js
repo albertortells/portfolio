@@ -6,7 +6,8 @@ const TRANSLATIONS = {
       experience: "Experience",
       industries: "Industries",
       stack: "Stack",
-      contact: "Contact"
+      contact: "Contact",
+      techtests: "Tech Tests"
     },
     hero: {
       eyebrow: "Statement of work",
@@ -101,7 +102,8 @@ const TRANSLATIONS = {
       experience: "Experiencia",
       industries: "Sectores",
       stack: "Stack",
-      contact: "Contacto"
+      contact: "Contacto",
+      techtests: "Pruebas técnicas"
     },
     hero: {
       eyebrow: "Orden de trabajo",
@@ -196,7 +198,8 @@ const TRANSLATIONS = {
       experience: "Experiència",
       industries: "Sectors",
       stack: "Stack",
-      contact: "Contacte"
+      contact: "Contacte",
+      techtests: "Proves tècniques"
     },
     hero: {
       eyebrow: "Ordre de treball",

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pruebas técnicas — Albert Ortells</title>
+<meta name="description" content="Dossier de pruebas técnicas resueltas por Albert Ortells: el enunciado, las decisiones de diseño y el código final de cada caso.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pruebas técnicas — Albert Ortells">
+<meta property="og:description" content="Dossier de pruebas técnicas resueltas por Albert Ortells: el enunciado, las decisiones de diseño y el código final de cada caso.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Pruebas técnicas — Albert Ortells">
+<meta name="twitter:description" content="Dossier de pruebas técnicas resueltas por Albert Ortells: el enunciado, las decisiones de diseño y el código final de cada caso.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+<script>
+  (function () {
+    var stored = localStorage.getItem('theme');
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span>// TECH TESTS</span></div>
+  <nav>
+    <a href="https://albertortells.cat">← Portfolio</a>
+  </nav>
+  <div class="topbar-controls">
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+      <span class="theme-icon" aria-hidden="true">☾</span>
+    </button>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner reveal">
+    <p class="eyebrow">DOSSIER · PRUEBAS TÉCNICAS</p>
+    <h1>Cómo resuelvo pruebas técnicas</h1>
+    <p class="lede">
+      Cada prueba técnica que he resuelto, contada como lo que realmente es:
+      un enunciado, unas decisiones de diseño y un resultado que se puede
+      revisar. <strong>Sin adornos</strong> — el enunciado, cómo se resolvió y el código final.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head reveal">
+    <p class="eyebrow">Casos</p>
+    <h2>Selecciona un caso</h2>
+  </div>
+  <div class="industry-grid reveal">
+    <a class="industry-card" href="cabsa/">
+      <p class="industry-tag">Java · Spring Boot</p>
+      <p class="industry-company">CABSA</p>
+      <p class="industry-note">API de animales: endpoints REST, tests con JUnit 5 + Mockito, y limpieza de código como foco principal.</p>
+      <span class="status status-settled" style="margin-top:0.875rem;"><span class="dot"></span>RESUELTA</span>
+    </a>
+  </div>
+</section>
+
+<section class="section contact-section">
+  <div class="tear reveal"><span>✂ TEAR HERE</span></div>
+  <div class="section-head center reveal">
+    <p class="eyebrow">Volver</p>
+    <h2>¿Buscas el resto del recorrido?</h2>
+  </div>
+  <p class="contact-lede reveal">El portfolio completo está en albertortells.cat.</p>
+  <div class="cta-row center reveal">
+    <a href="https://albertortells.cat" class="btn-primary">Ver el portfolio ↗</a>
+  </div>
+  <div class="barcode reveal" aria-hidden="true"></div>
+  <p class="foot-note reveal">Dossier de pruebas técnicas · Albert Ortells</p>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
