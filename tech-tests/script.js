@@ -61,6 +61,19 @@ document.querySelectorAll('.lang-btn').forEach(function (btn) {
 
 setLanguage(detectInitialLang());
 
+function themeCookieDomain() {
+  return location.hostname.endsWith('albertortells.cat') ? '; domain=.albertortells.cat' : '';
+}
+
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setCookie(name, value) {
+  document.cookie = name + '=' + encodeURIComponent(value) + '; path=/; max-age=' + (365 * 24 * 60 * 60) + themeCookieDomain() + '; samesite=lax';
+}
+
 const themeToggle = document.getElementById('themeToggle');
 const themeIcon = themeToggle ? themeToggle.querySelector('.theme-icon') : null;
 const systemDarkQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -76,10 +89,10 @@ function applyTheme(theme) {
 
 function setTheme(theme) {
   applyTheme(theme);
-  localStorage.setItem('theme', theme);
+  setCookie('theme', theme);
 }
 
-applyTheme(localStorage.getItem('theme') || (systemDarkQuery.matches ? 'dark' : 'light'));
+applyTheme(getCookie('theme') || (systemDarkQuery.matches ? 'dark' : 'light'));
 
 if (themeToggle) {
   themeToggle.addEventListener('click', function () {
@@ -89,7 +102,7 @@ if (themeToggle) {
 }
 
 systemDarkQuery.addEventListener('change', function (e) {
-  if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
+  if (!getCookie('theme')) applyTheme(e.matches ? 'dark' : 'light');
 });
 
 const revealEls = document.querySelectorAll('.reveal');

@@ -15,7 +15,8 @@
 <link rel="stylesheet" href="style.css">
 <script>
   (function () {
-    var stored = localStorage.getItem('theme');
+    var match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+    var stored = match ? decodeURIComponent(match[1]) : null;
     var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', theme);
   })();
