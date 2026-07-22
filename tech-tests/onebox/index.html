@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cómo resolví la prueba técnica de OneBox — Albert Ortells</title>
+<meta name="description" content="Cómo resolví la prueba técnica de Java/Spring Boot de OneBox: un sistema de gestión de carritos diseñado de fuera hacia dentro, con persistencia en memoria y 17 tests.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cómo resolví la prueba técnica de OneBox">
+<meta property="og:description" content="Un sistema de gestión de carritos diseñado de fuera hacia dentro, con persistencia en memoria y 17 tests.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cómo resolví la prueba técnica de OneBox">
+<meta name="twitter:description" content="Un sistema de gestión de carritos diseñado de fuera hacia dentro, con persistencia en memoria y 17 tests.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+    var stored = match ? decodeURIComponent(match[1]) : null;
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body data-page="onebox">
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="onebox.nav.role">// TECH TESTS</span></div>
+  <nav>
+    <a href="../" data-i18n="onebox.nav.cases">← Casos</a>
+    <a href="https://albertortells.cat">Portfolio</a>
+  </nav>
+  <div class="topbar-controls">
+    <div class="lang-switch mono" role="group" aria-label="Language">
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <button type="button" class="lang-btn" data-lang="es">ES</button>
+      <button type="button" class="lang-btn" data-lang="ca">CA</button>
+    </div>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+      <span class="theme-icon" aria-hidden="true">☾</span>
+    </button>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner reveal">
+    <p class="eyebrow" data-i18n="onebox.hero.eyebrow">CASO · ONEBOX</p>
+    <h1 data-i18n="onebox.hero.h1">Cómo resolví la prueba técnica de OneBox</h1>
+    <p class="lede">
+      Java · Spring Boot · <span data-i18n="onebox.hero.storage">En memoria</span> · 2023 ·
+      <span class="status status-settled" style="margin-left:0.25rem;"><span class="dot"></span><span data-i18n="onebox.status.settled">RESUELTA</span></span>
+    </p>
+  </div>
+</section>
+
+<section class="section reveal">
+<div class="story">
+
+<p data-i18n="onebox.story.p1">
+Todo empezó con un único documento: la prueba técnica de OneBox (Ticket
+Distribution System), fechada en 2023. Un servicio pequeño de e-commerce
+—carritos, productos, expiración por inactividad— con una advertencia
+clara sobre qué se iba a valorar: que cumpliera los requisitos, una
+cobertura de tests mínima, y que fuera fácil de probar, revisar y
+desplegar. Nada de sistemas grandes ni de funcionalidad de sobra.
+</p>
+
+<h2 data-i18n="onebox.story.challenge.h2">El reto</h2>
+<p data-i18n="onebox.story.challenge.p">El enunciado pedía cinco comportamientos muy concretos:</p>
+<ul>
+  <li data-i18n="onebox.story.challenge.li1">Crear un carrito, con el identificador generado por la propia aplicación.</li>
+  <li data-i18n="onebox.story.challenge.li2">Que ese carrito pueda contener productos.</li>
+  <li data-i18n="onebox.story.challenge.li3" data-i18n-html>Añadir uno o más productos a un carrito, cada uno con <code>id</code> numérico, <code>description</code> alfanumérica y <code>amount</code> numérico.</li>
+  <li data-i18n="onebox.story.challenge.li4">Consultar un carrito dado su id.</li>
+  <li data-i18n="onebox.story.challenge.li5">Eliminar un carrito, tanto de forma explícita como automáticamente tras diez minutos de inactividad.</li>
+</ul>
+<p data-i18n="onebox.story.challenge.p2">
+El único requisito técnico impuesto era usar Java. Todo lo demás —stack,
+arquitectura, alcance de cada pieza— quedaba en mi mano, y ahí es donde
+entran las decisiones que de verdad definen el resultado.
+</p>
+
+<h2 data-i18n="onebox.story.build.h2">Construir de fuera hacia dentro</h2>
+<p data-i18n="onebox.story.build.p1" data-i18n-html>
+A diferencia de otras pruebas donde el contrato de entrada y salida viene
+totalmente fijado por el enunciado y tiene sentido modelar primero el
+dominio, aquí el enunciado describía comportamientos ("crear un carrito",
+"añadir productos", "eliminarlo") sin imponer ninguna forma de API
+concreta. Diseñar el dominio antes de saber exactamente qué necesitaba
+exponer cada operación habría significado adivinar una forma para
+<code>Cart</code> y <code>Product</code> antes de tener motivo real para
+esa forma.
+</p>
+<p data-i18n="onebox.story.build.p2" data-i18n-html>
+Así que invertí el orden: por cada operación, empecé por el punto de
+entrada —el controller REST, o el scheduler en el caso de la expiración—
+devolviendo una respuesta mínima construida ahí mismo, sin capa de
+servicio todavía. Eso me daba de inmediato el contrato verificado por un
+test: verbo HTTP, ruta, código de estado, forma del cuerpo. Solo una vez
+fijado ese contrato, empujaba la lógica hacia dentro: primero a un
+<code>CartService</code> que seguía sin tocar ninguna persistencia, y por
+último a un <code>CartRepository</code> en memoria (un
+<code>ConcurrentHashMap</code>, sin base de datos real, porque el
+enunciado no pedía persistencia y añadirla habría sido peso de más).
+</p>
+<p data-i18n="onebox.story.build.p3">
+El primer intento de este patrón se me fue de las manos: en vez de tocar
+solo el controller de un flujo, construí también el servicio y el
+repositorio de golpe. Sirvió para fijar la regla que seguí en todo lo
+demás: cada capa se entrega, se verifica y se confirma antes de tocar la
+siguiente, nunca varias a la vez.
+</p>
+
+<h2 data-i18n="onebox.story.decision.h2">La decisión que más pesé: cómo comunicar "el carrito no existe"</h2>
+<p data-i18n="onebox.story.decision.p1" data-i18n-html>
+Con las cuatro operaciones y la expiración ya en marcha, el camino feliz
+funcionaba y estaba testeado, pero consultar, modificar o borrar un
+carrito inexistente no tenía un tratamiento explícito: en unos casos se
+devolvía <code>null</code>, en otros se propagaba un error interno sin
+control. Necesitaba una única forma consistente de comunicar ese caso en
+las tres operaciones que dependen de que el carrito exista.
+</p>
+<p data-i18n="onebox.story.decision.p2" data-i18n-html>
+La alternativa más directa habría sido crear también un DTO de error
+propio junto a la excepción, pero eso repite exactamente lo que había
+evitado desde el principio: introducir estructuras nuevas sin necesidad
+real. Preferí una <code>CartNotFoundException</code> de dominio, traducida
+a <code>404</code> por un único <code>@RestControllerAdvice</code>, usando
+el <code>ProblemDetail</code> que Spring ya trae de serie como cuerpo del
+error en vez de inventar un tipo nuevo. Por la misma razón, los propios
+<code>Cart</code> y <code>Product</code> —records simples— hacen de
+request y de response directamente; no hay DTOs en ningún punto de la
+API, porque ningún endpoint necesitaba una forma distinta de la que el
+dominio ya tenía.
+</p>
+
+<h2 data-i18n="onebox.story.tests.h2">Verificarlo con tests</h2>
+<p data-i18n="onebox.story.tests.p1" data-i18n-html>
+Cada capa se testea a su propio nivel. El controller, con
+<code>@WebMvcTest</code> y <code>MockMvc</code>, mockeando el servicio:
+lo que importa ahí es el contrato HTTP, no la lógica de negocio. El
+servicio y el scheduler, con JUnit 5 y Mockito sobre el repositorio
+mockeado: lo que importa es la regla (generar el id, fusionar productos,
+lanzar <code>CartNotFoundException</code> cuando toca, calcular qué
+carritos llevan más de diez minutos inactivos), no de dónde vienen los
+datos. Y el repositorio en memoria, con un test directo sobre la
+implementación real, sin mocks, porque ahí lo que quiero comprobar es que
+el <code>ConcurrentHashMap</code> guarda, busca y expira correctamente.
+</p>
+<p data-i18n="onebox.story.tests.p2" data-i18n-html>
+El resultado es una suite de 17 tests, ejecutada con
+<code>./mvnw test</code>, que cubre las cuatro operaciones, la expiración
+por inactividad, y tanto el caso feliz como el de carrito inexistente en
+cada una de las tres operaciones que lo necesitan.
+</p>
+
+<h2 data-i18n="onebox.story.docs.h2">Dejarlo documentado</h2>
+<p data-i18n="onebox.story.docs.p" data-i18n-html>
+En el <code>README.md</code> quedó el enunciado completo (el PDF original
+se elimina del proyecto al final), la solución adoptada y por qué, la
+estructura de paquetes, cómo levantar el proyecto con el wrapper de
+Maven incluido, cómo ejecutar los tests, la API completa con ejemplos, y
+las limitaciones que asumí conscientemente: sin base de datos real, sin
+librería de validación de entrada más allá del propio tipado de
+<code>Product</code>. Nada de eso es un descuido; es la otra cara de
+mantener las dependencias al mínimo que pedía el enunciado.
+</p>
+
+<h2 data-i18n="onebox.story.result.h2">El resultado</h2>
+<p data-i18n="onebox.story.result.p">
+Un servicio pequeño, con la forma de la API decidida por el contrato de
+cada operación y no por el dominio, la ausencia de "carrito no encontrado"
+resuelta en un único punto en vez de repetida en cada flujo, y sin más
+piezas —DTOs, capas, dependencias— de las que el problema pedía.
+</p>
+
+<div class="cta-row">
+  <a href="https://github.com/albertortells/onebox-software-engineer-test" class="btn-primary" target="_blank" rel="noopener" data-i18n="onebox.cta.github">Ver el código en GitHub ↗</a>
+  <a href="../" class="btn-ghost" data-i18n="onebox.cta.back">← Ver otros casos</a>
+</div>
+
+</div>
+</section>
+
+<script src="../translations.js"></script>
+<script src="../script.js"></script>
+</body>
+</html>
