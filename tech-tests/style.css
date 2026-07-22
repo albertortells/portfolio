@@ -429,13 +429,26 @@ a{color:inherit;}
   transition:border-color .15s ease, transform .15s ease;
 }
 .industry-card:hover{ border-color:var(--stamp-blue); transform:translateY(-2px); }
+.industry-top{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:0.5rem;
+  margin:0 0 0.625rem 0;
+}
 .industry-tag{
   font-family:'IBM Plex Mono', monospace;
   font-size:0.6875rem;
   letter-spacing:0.1em;
   text-transform:uppercase;
   color:var(--stamp-blue);
-  margin:0 0 0.625rem 0;
+  margin:0;
+}
+.industry-year{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.6875rem;
+  color:var(--ink-soft);
+  white-space:nowrap;
 }
 .industry-company{
   font-size:1.03125rem;
