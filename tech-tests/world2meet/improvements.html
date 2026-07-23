@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qué le falta a esta prueba para estar perfecta — Albert Ortells</title>
+<meta name="description" content="Repaso técnico honesto de la prueba de World2Meet: un bug real en el test, inconsistencias con el enunciado y los puntos opcionales pendientes.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Qué le falta a esta prueba para estar perfecta">
+<meta property="og:description" content="Repaso técnico del estado actual del código de la prueba de World2Meet.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Qué le falta a esta prueba para estar perfecta">
+<meta name="twitter:description" content="Repaso técnico del estado actual del código de la prueba de World2Meet.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+    var stored = match ? decodeURIComponent(match[1]) : null;
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body data-page="w2mImprovements">
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="w2mImprovements.nav.role">// TECH TESTS</span></div>
+  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="topbarMenu" aria-label="Menu">
+    <span class="menu-icon" aria-hidden="true"></span>
+  </button>
+  <div class="topbar-menu" id="topbarMenu">
+    <nav>
+      <a href="./index.html" data-i18n="w2mImprovements.nav.story">← Historia</a>
+      <a href="../" data-i18n="w2mImprovements.nav.cases">Casos</a>
+      <a href="https://albertortells.cat">Portfolio</a>
+    </nav>
+    <div class="topbar-controls">
+      <div class="lang-switch mono" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="es">ES</button>
+        <button type="button" class="lang-btn" data-lang="ca">CA</button>
+      </div>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner reveal">
+    <p class="eyebrow" data-i18n="w2mImprovements.hero.eyebrow">Prueba técnica · World2Meet</p>
+    <h1 data-i18n="w2mImprovements.hero.h1">Qué le falta a esta prueba para estar perfecta</h1>
+    <p class="lede" data-i18n="w2mImprovements.hero.lede" data-i18n-html>
+      Repaso técnico del estado actual del código: un bug real en el test, una inconsistencia con
+      el enunciado, y los puntos opcionales que quedaron pendientes. Contexto de por qué se llegó
+      hasta aquí en <a href="./index.html">world2meet</a>.
+    </p>
+  </div>
+</section>
+
+<section class="section reveal">
+<div class="story">
+
+<h2 data-i18n="w2mImprovements.story.h2Findings">Hallazgos</h2>
+
+<div class="w2m-item">
+  <span class="w2m-bug-banner" data-i18n="w2mImprovements.story.bugLabel">⚠ Bug</span>
+  <div class="w2m-item-head">
+    <span class="w2m-num">1</span>
+    <h3 data-i18n="w2mImprovements.story.item1.h3">El test no está probando lo que parece</h3>
+  </div>
+  <p data-i18n="w2mImprovements.story.item1.p1" data-i18n-html>
+    <code>SuperheroeServiceImplTest</code> declara:
+  </p>
+  <pre><code>@Autowired
+private SuperheroeService service;
+
+@Mock
+private SuperheroesRepository repository;</code></pre>
+  <p data-i18n="w2mImprovements.story.item1.p2" data-i18n-html>
+    El <code>@Mock</code> nunca se inyecta en <code>service</code> (no hay <code>@InjectMocks</code>,
+    <code>@MockBean</code> ni <code>MockitoAnnotations.openMocks(this)</code>/<code>MockitoExtension</code>).
+    El <code>service</code> autowireado es el bean real, conectado al repositorio real contra la H2 en
+    memoria sembrada por Liquibase con los 10 héroes de <code>superheroes.sql</code>. Los
+    <code>doReturn(...).when(repository)...</code> no tienen ningún efecto: son un mock huérfano.
+  </p>
+  <p data-i18n="w2mImprovements.story.item1.p3" data-i18n-html>
+    Esto explica por qué <code>getSuperheroByID_isOK_thenReturnStatus200</code> "funciona" y espera
+    <code>"Batman"</code> para <code>id = 2</code>: no es porque el mock devuelva ese valor, es que
+    coincide por casualidad con el dato semilla real. Es un test de integración disfrazado de test
+    unitario, y frágil ante cualquier cambio en <code>superheroes.sql</code>.
+  </p>
+  <p data-i18n="w2mImprovements.story.item1.p4" data-i18n-html>
+    <strong>Cómo arreglarlo:</strong> añadir <code>@ExtendWith(MockitoExtension.class)</code> (o
+    <code>MockitoAnnotations.openMocks(this)</code> en un <code>@BeforeEach</code>) e inyectar el mock con
+    <code>@InjectMocks SuperheroeServiceImpl service</code> en lugar de <code>@Autowired</code> +
+    <code>@SpringBootTest</code>, para que sea un test unitario real y rápido, sin levantar contexto de
+    Spring ni base de datos.
+  </p>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">2</span>
+    <h3 data-i18n="w2mImprovements.story.item2.h3">Inconsistencia Java 11 vs bytecode 1.8</h3>
+  </div>
+  <p data-i18n="w2mImprovements.story.item2.p" data-i18n-html>
+    <code>pom.xml</code> declara <code>&lt;java.version&gt;11&lt;/java.version&gt;</code> pero el
+    <code>maven-compiler-plugin</code> está configurado con <code>&lt;source&gt;1.8&lt;/source&gt;</code>
+    <code>&lt;target&gt;1.8&lt;/target&gt;</code>. El enunciado pedía explícitamente Java 11.
+    Cambiar el plugin a <code>&lt;source&gt;11&lt;/source&gt;&lt;target&gt;11&lt;/target&gt;</code> (o mejor,
+    usar <code>&lt;maven.compiler.release&gt;11&lt;/maven.compiler.release&gt;</code> y eliminar la
+    propiedad duplicada).
+  </p>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">3</span>
+    <h3 data-i18n="w2mImprovements.story.item3.h3">Puntos opcionales del enunciado sin implementar</h3>
+  </div>
+  <ul>
+    <li data-i18n="w2mImprovements.story.item3.li1" data-i18n-html><strong>Anotación personalizada de tiempos de ejecución.</strong> Crear <code>@LogExecutionTime</code> +
+      <code>@Aspect</code> con Spring AOP (<code>spring-boot-starter-aop</code>) que envuelva el método
+      anotado, mida con <code>System.nanoTime()</code> y escriba el resultado con un logger. Aplicarla
+      sobre los métodos de <code>SuperheroeServiceImpl</code>.</li>
+    <li data-i18n="w2mImprovements.story.item3.li2" data-i18n-html><strong>Gestión centralizada de excepciones.</strong> Añadir un <code>@RestControllerAdvice</code>
+      con <code>@ExceptionHandler</code> para <code>MethodArgumentNotValidException</code>,
+      <code>ConstraintViolationException</code> y una excepción de negocio propia (p. ej.
+      <code>SuperheroeNotFoundException</code>), devolviendo siempre un <code>GenericResponse</code>
+      coherente en vez de las validaciones manuales repetidas en el controlador.</li>
+    <li data-i18n="w2mImprovements.story.item3.li3" data-i18n-html><strong>Test de integración.</strong> Añadir un <code>@SpringBootTest</code> con
+      <code>@AutoConfigureMockMvc</code> que golpee los endpoints reales (<code>MockMvc</code> o
+      <code>WebTestClient</code>) contra la H2 en memoria, complementando el test unitario del servicio.</li>
+    <li data-i18n="w2mImprovements.story.item3.li4" data-i18n-html><strong>Dockerización.</strong> Añadir un <code>Dockerfile</code> multi-stage (build con
+      <code>mvnw</code> + imagen final <code>eclipse-temurin:11-jre</code>) y opcionalmente un
+      <code>docker-compose.yml</code>.</li>
+    <li data-i18n="w2mImprovements.story.item3.li5" data-i18n-html><strong>Caché de peticiones.</strong> Añadir <code>spring-boot-starter-cache</code> +
+      <code>@EnableCaching</code>, y anotar <code>getAllSuperheroes()</code> /
+      <code>getSuperheroByID()</code> con <code>@Cacheable</code>, invalidando la caché en
+      <code>updateSuperhero()</code> y <code>deleteSuperhero()</code> con <code>@CacheEvict</code>.</li>
+    <li data-i18n="w2mImprovements.story.item3.li6" data-i18n-html><strong>Documentación de la API.</strong> Ya está la dependencia <code>spring-restdocs-mockmvc</code>
+      en el <code>pom.xml</code> pero no se llegó a generar documentación con ella. Más simple y
+      mantenible hoy: añadir <code>springdoc-openapi-ui</code> para Swagger UI autogenerado, o completar
+      la configuración de REST Docs ya presente.</li>
+    <li data-i18n="w2mImprovements.story.item3.li7" data-i18n-html><strong>Seguridad del API.</strong> No hay ninguna dependencia de seguridad. Como mínimo, añadir
+      <code>spring-boot-starter-security</code> con autenticación básica o un API key para los endpoints
+      de escritura (<code>PUT</code>/<code>DELETE</code>), y sustituir
+      <code>@CrossOrigin(origins = "*")</code> (abierto a cualquier origen) por una lista blanca de
+      orígenes concreta.</li>
+  </ul>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">4</span>
+    <h3 data-i18n="w2mImprovements.story.item4.h3">Diseño de la API</h3>
+  </div>
+  <ul>
+    <li data-i18n="w2mImprovements.story.item4.li1" data-i18n-html><strong>No es RESTful.</strong> Las rutas usan el verbo en la propia URL
+      (<code>GET /get/all</code>, <code>GET /get/one/{id}</code>, <code>PUT /put</code>,
+      <code>DELETE /delete/{id}</code>) en vez de apoyarse en el método HTTP: debería ser
+      <code>GET /superheroes</code>, <code>GET /superheroes/{id}</code>,
+      <code>GET /superheroes?name=man</code>, <code>PUT /superheroes/{id}</code>,
+      <code>DELETE /superheroes/{id}</code>.</li>
+    <li data-i18n="w2mImprovements.story.item4.li2" data-i18n-html><strong>El <code>PUT</code> no lleva el id en la URL</strong>
+      (<code>SuperheroesController.putExample</code>): recibe el id dentro del body
+      (<code>SuperheroeDAO.id</code>). Debería ser <code>PUT /superheroes/{id}</code> con el id como
+      <code>@PathVariable</code>, y el body solo con los campos a modificar.</li>
+    <li data-i18n="w2mImprovements.story.item4.li3" data-i18n-html><strong>Nombres de método heredados de la plantilla.</strong> <code>putExample</code> y
+      <code>deleteExample</code> en <code>SuperheroesController</code> son nombres de ejemplo de Spring
+      Initializr que no se renombraron; deberían llamarse <code>updateSuperheroe</code> /
+      <code>deleteSuperheroe</code>.</li>
+    <li data-i18n="w2mImprovements.story.item4.li4" data-i18n-html><strong><code>URLConstant.POST</code> está declarado y no se usa</strong> (no hay endpoint de
+      creación, ni lo pedía el enunciado). Si no se va a añadir un <code>POST</code>, eliminar la
+      constante muerta; si se añade, usarla.</li>
+    <li data-i18n="w2mImprovements.story.item4.li5" data-i18n-html><strong>Falta paginación</strong> en <code>getAllSuperheroes()</code>. Con
+      <code>JpaRepository</code> ya disponible, cambiar a
+      <code>Page&lt;SuperheroeEntity&gt; findAll(Pageable pageable)</code> es casi gratis.</li>
+  </ul>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">5</span>
+    <h3 data-i18n="w2mImprovements.story.item5.h3">Validación</h3>
+  </div>
+  <p data-i18n="w2mImprovements.story.item5.p1" data-i18n-html>
+    <code>javax.validation</code> está en el <code>pom.xml</code> y <code>@Valid</code> se usa en el
+    controlador, pero <code>SuperheroeDAO</code> no tiene ninguna anotación de validación
+    (<code>@NotBlank</code>, <code>@Size</code>, etc.), así que <code>@Valid</code> no hace nada ahí.
+    Los controles actuales son manuales y repetidos:
+  </p>
+  <pre><code>if(data == null || StringUtils.isAllEmpty(data.getName()) || StringUtils.isAllEmpty(data.getPower())) { ... }</code></pre>
+  <p data-i18n="w2mImprovements.story.item5.p2" data-i18n-html>
+    Mover estas reglas a anotaciones en <code>SuperheroeDAO</code> (<code>@NotBlank</code> en
+    <code>name</code>/<code>power</code>, <code>@Size(max = 25)</code> / <code>@Size(max = 50)</code>
+    acorde a las columnas de <code>superheroes.sql</code>) y dejar que el
+    <code>@RestControllerAdvice</code> del punto 3 traduzca los errores de validación a
+    <code>GenericResponse</code>.
+  </p>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">6</span>
+    <h3 data-i18n="w2mImprovements.story.item6.h3">Logging</h3>
+  </div>
+  <p data-i18n="w2mImprovements.story.item6.p" data-i18n-html>
+    No hay ningún logger en el proyecto. Añadir SLF4J (<code>LoggerFactory.getLogger(...)</code>) al
+    menos en el servicio y en el aspecto de tiempos de ejecución del punto 3; ahora mismo no queda
+    ningún rastro de lo que hace la aplicación en producción.
+  </p>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">7</span>
+    <h3 data-i18n="w2mImprovements.story.item7.h3">Acoplamiento a tipos concretos</h3>
+  </div>
+  <ul>
+    <li data-i18n="w2mImprovements.story.item7.li1" data-i18n-html><code>SuperheroesRepository</code> declara <code>ArrayList&lt;SuperheroeEntity&gt; findAll()</code>
+      y <code>ArrayList&lt;SuperheroeEntity&gt; findSuperheroeEntitiesByNameContainingIgnoreCase(String param)</code>.
+      Un repositorio Spring Data debería exponer <code>List&lt;T&gt;</code>, no
+      <code>ArrayList&lt;T&gt;</code>: acoplarse a la implementación concreta no aporta nada y
+      sobreescribir <code>findAll()</code> solo para cambiar el tipo de retorno es innecesario.</li>
+    <li data-i18n="w2mImprovements.story.item7.li2" data-i18n-html>Mismo patrón en
+      <code>SuperheroeMapper.arrayListSuperheroeEntityToArrayListSuperheroDTO</code>: usar
+      <code>List&lt;SuperheroeDTO&gt;</code> en la firma.</li>
+  </ul>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">8</span>
+    <h3 data-i18n="w2mImprovements.story.item8.h3">Mezcla de JAX-RS y Spring</h3>
+  </div>
+  <p data-i18n="w2mImprovements.story.item8.p" data-i18n-html>
+    El proyecto usa Spring Boot de principio a fin, pero para los códigos de estado tira de
+    <code>javax.ws.rs.core.Response.Status</code> (JAX-RS) en vez de
+    <code>org.springframework.http.HttpStatus</code>, y mete la dependencia
+    <code>javax.ws.rs-api</code> solo para eso. Sustituir por <code>HttpStatus</code> de Spring y
+    devolver <code>ResponseEntity&lt;GenericResponse&gt;</code> en los controladores en vez de fijar el
+    status solo dentro del <code>GenericResponse</code> (así el código HTTP real de la respuesta
+    coincide con el que se informa en el body).
+  </p>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">9</span>
+    <h3 data-i18n="w2mImprovements.story.item9.h3">Configuración</h3>
+  </div>
+  <ul>
+    <li data-i18n="w2mImprovements.story.item9.li1" data-i18n-html>La contraseña de la datasource (<code>spring.datasource.password=password</code>) está
+      hardcodeada en <code>application.properties</code>. Para una H2 en memoria de prueba el riesgo es
+      mínimo, pero es un mal hábito a evitar incluso en pruebas técnicas.</li>
+    <li data-i18n="w2mImprovements.story.item9.li2" data-i18n-html>No hay perfiles (<code>application-dev.properties</code>, <code>application-prod.properties</code>)
+      ni forma de parametrizar el puerto/entorno sin editar el fichero fuente.</li>
+  </ul>
+</div>
+
+<div class="w2m-item">
+  <div class="w2m-item-head">
+    <span class="w2m-num">10</span>
+    <h3 data-i18n="w2mImprovements.story.item10.h3">Documentación y naming</h3>
+  </div>
+  <ul>
+    <li data-i18n="w2mImprovements.story.item10.li1">Mezcla de español ("Superheroe", "Prueba técnica") e inglés (nombres de clases, mensajes de
+      respuesta) — no bloqueante, pero conviene decidir un idioma para el código y mantenerlo
+      consistente.</li>
+    <li data-i18n="w2mImprovements.story.item10.li2" data-i18n-html>No hay Javadoc en las interfaces públicas (<code>SuperheroeService</code>,
+      <code>SuperheroesRepository</code>).</li>
+  </ul>
+</div>
+
+<h2 data-i18n="w2mImprovements.story.h2Priority">Resumen priorizado</h2>
+
+<ol class="w2m-priority-list">
+  <li data-i18n="w2mImprovements.story.priority.li1">Arreglar el test que no testea nada real (punto 1) — es lo más grave, da falsa confianza.</li>
+  <li data-i18n="w2mImprovements.story.priority.li2">Alinear Java 11 en el compilador (punto 2) — incumple un requisito explícito del enunciado.</li>
+  <li data-i18n="w2mImprovements.story.priority.li3">Gestión centralizada de excepciones + validación con anotaciones (puntos 3 y 5) — mejora visible
+    con poco esfuerzo.</li>
+  <li data-i18n="w2mImprovements.story.priority.li4">Rediseñar rutas a estilo REST (punto 4) — impacto en el contrato de la API, hacerlo antes de sumar
+    más clientes.</li>
+  <li data-i18n="w2mImprovements.story.priority.li5">Resto de opcionales (AOP de tiempos, tests de integración, Docker, caché, seguridad, documentación
+    OpenAPI) según tiempo disponible.</li>
+</ol>
+
+<div class="w2m-tags">
+  <span class="w2m-tag" data-i18n="w2mImprovements.story.tags.tag1">Testing</span>
+  <span class="w2m-tag">Spring Boot</span>
+  <span class="w2m-tag">REST</span>
+  <span class="w2m-tag" data-i18n="w2mImprovements.story.tags.tag4">Seguridad</span>
+  <span class="w2m-tag">Clean Code</span>
+</div>
+
+<div class="cta-row">
+  <a href="https://github.com/albertortells/world2meet-developers" class="btn-primary" target="_blank" rel="noopener" data-i18n="w2mImprovements.cta.github">Ver el código en GitHub ↗</a>
+  <a href="./index.html" class="btn-ghost" data-i18n="w2mImprovements.cta.story">← Volver a la historia</a>
+  <a href="../" class="btn-ghost" data-i18n="w2mImprovements.cta.cases">← Ver otros casos</a>
+</div>
+
+</div>
+</section>
+
+<script src="../translations.js"></script>
+<script src="../script.js"></script>
+</body>
+</html>

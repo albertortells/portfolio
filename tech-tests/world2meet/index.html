@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cómo construí la API de súper héroes — Albert Ortells</title>
+<meta name="description" content="Cómo resolví la prueba técnica de Java/Spring Boot de World2Meet: una API de súper héroes, commit a commit, con Liquibase, MapStruct y arquitectura en capas.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cómo construí la API de súper héroes">
+<meta property="og:description" content="El relato, en primera persona, de cómo abordé la prueba técnica de backend de W2M.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cómo construí la API de súper héroes">
+<meta name="twitter:description" content="El relato, en primera persona, de cómo abordé la prueba técnica de backend de W2M.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+    var stored = match ? decodeURIComponent(match[1]) : null;
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body data-page="world2meet">
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="world2meet.nav.role">// TECH TESTS</span></div>
+  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="topbarMenu" aria-label="Menu">
+    <span class="menu-icon" aria-hidden="true"></span>
+  </button>
+  <div class="topbar-menu" id="topbarMenu">
+    <nav>
+      <a href="../" data-i18n="world2meet.nav.cases">← Casos</a>
+      <a href="https://albertortells.cat">Portfolio</a>
+    </nav>
+    <div class="topbar-controls">
+      <div class="lang-switch mono" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="es">ES</button>
+        <button type="button" class="lang-btn" data-lang="ca">CA</button>
+      </div>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner reveal">
+    <p class="eyebrow" data-i18n="world2meet.hero.eyebrow">Prueba técnica · World2Meet · Julio 2021</p>
+    <h1 data-i18n="world2meet.hero.h1">Cómo construí la API de súper héroes</h1>
+    <p class="lede" data-i18n="world2meet.hero.lede">
+      El relato, en primera persona, de cómo abordé la prueba técnica de backend de W2M:
+      las decisiones de diseño, lo que prioricé y lo que dejé fuera por tiempo.
+    </p>
+  </div>
+</section>
+
+<section class="section reveal">
+<div class="story">
+
+<p data-i18n="world2meet.story.p1">
+El enunciado pedía una API en Spring Boot 2 / Java 11 para mantener una lista de súper héroes:
+consultarlos todos, consultarlos por id, buscarlos por un fragmento de su nombre, modificarlos y
+borrarlos, con persistencia en una H2 en memoria y al menos un test unitario. Además había una
+lista de puntos opcionales (DDL con librería, anotación de tiempos, gestión de excepciones,
+tests de integración, Docker, caché, documentación, seguridad) que sabía que no me daría tiempo
+a cubrir todos, así que decidí desde el principio priorizar lo obligatorio y dejar sentada una
+base de arquitectura limpia sobre la que esos opcionales pudieran añadirse después sin fricción.
+</p>
+
+<h2 data-i18n="world2meet.story.process.h2">El proceso, commit a commit</h2>
+
+<div class="w2m-timeline">
+
+  <div class="w2m-entry">
+    <div class="w2m-date"><span data-i18n="world2meet.story.timeline.entry1.date">13 jul 2021</span> <span class="w2m-commit">Initial commit · Create .gitignore</span></div>
+    <p data-i18n="world2meet.story.timeline.entry1.p">
+      Arranqué el repositorio en local. No hacía falta publicarlo, el enunciado permitía entregarlo
+      comprimido, pero preferí llevarlo por Git desde el minuto uno para que el historial de commits
+      sirviera como evidencia del proceso, tal y como sugería el punto de "se valorará positivamente
+      el uso de TDD... se pueden utilizar los commits para ver el proceso".
+    </p>
+  </div>
+
+  <div class="w2m-entry">
+    <div class="w2m-date"><span data-i18n="world2meet.story.timeline.entry2.date">13 jul 2021</span> <span class="w2m-commit">Spring Initializr</span></div>
+    <p data-i18n="world2meet.story.timeline.entry2.p">Generé el esqueleto del proyecto y elegí las dependencias pensando ya en varios de los puntos opcionales:</p>
+    <ul>
+      <li data-i18n="world2meet.story.timeline.entry2.li1" data-i18n-html><strong>Spring Web + Data JPA + Data JDBC + Data REST</strong> para la capa de API y persistencia.</li>
+      <li data-i18n="world2meet.story.timeline.entry2.li2" data-i18n-html><strong>H2</strong> en memoria, tal y como pedía el enunciado.</li>
+      <li data-i18n="world2meet.story.timeline.entry2.li3" data-i18n-html><strong>Liquibase</strong> para no escribir el DDL a mano — cubre el opcional de "librería que facilite el mantenimiento de los scripts DDL".</li>
+      <li data-i18n="world2meet.story.timeline.entry2.li4" data-i18n-html><strong>MapStruct</strong> para no escribir a mano el mapeo entre entidades JPA y los objetos que viajan por la API.</li>
+      <li data-i18n="world2meet.story.timeline.entry2.li5" data-i18n-html><strong>spring-restdocs-mockmvc</strong> pensando en generar documentación de la API a partir de los tests, aunque al final el tiempo no me llegó para completar esa parte.</li>
+    </ul>
+  </div>
+
+  <div class="w2m-entry">
+    <div class="w2m-date"><span data-i18n="world2meet.story.timeline.entry3.date">15 jul 2021 (mañana)</span> <span class="w2m-commit">Puntos 1 a 3</span></div>
+    <p data-i18n="world2meet.story.timeline.entry3.p">Este fue el commit grueso: monté la arquitectura en capas y los tres primeros endpoints de consulta.</p>
+    <ul>
+      <li data-i18n="world2meet.story.timeline.entry3.li1" data-i18n-html><code>SuperheroeEntity</code> + changelog de Liquibase (<code>superheroes.sql</code>) que crea la tabla y siembra 10 héroes de ejemplo.</li>
+      <li data-i18n="world2meet.story.timeline.entry3.li2" data-i18n-html>Separación <code>Entity</code> (persistencia) / <code>DAO</code> (entrada) / <code>DTO</code> (salida), con <code>SuperheroeMapper</code> de MapStruct entre medias, para no acoplar lo que guardo en base de datos con lo que expongo por la API.</li>
+      <li data-i18n="world2meet.story.timeline.entry3.li3" data-i18n-html><code>SuperheroesRepository</code> sobre <code>JpaRepository</code>, con un método derivado <code>findSuperheroeEntitiesByNameContainingIgnoreCase</code> para la búsqueda por nombre parcial que pedía el enunciado (el ejemplo de "man" → Spiderman/Superman/Manolito).</li>
+      <li data-i18n="world2meet.story.timeline.entry3.li4" data-i18n-html><code>GenericResponse</code> como envoltorio único de respuesta (status, message, data) para que todos los endpoints respondan de forma consistente.</li>
+      <li data-i18n="world2meet.story.timeline.entry3.li5" data-i18n-html><code>URLConstant</code> para centralizar las rutas y no repetir strings mágicos por los controladores.</li>
+      <li data-i18n="world2meet.story.timeline.entry3.li6">Los tres endpoints GET: todos, por id y por nombre.</li>
+    </ul>
+  </div>
+
+  <div class="w2m-entry">
+    <div class="w2m-date"><span data-i18n="world2meet.story.timeline.entry4.date">15 jul 2021 (mediodía)</span> <span class="w2m-commit">Update Superheroe</span></div>
+    <p data-i18n="world2meet.story.timeline.entry4.p" data-i18n-html>Añadí el <code>PUT</code> para modificar un héroe existente, con validación básica de que el id exista antes de tocar nada.</p>
+  </div>
+
+  <div class="w2m-entry">
+    <div class="w2m-date"><span data-i18n="world2meet.story.timeline.entry5.date">15 jul 2021 (tarde)</span> <span class="w2m-commit">Delete superhero</span></div>
+    <p data-i18n="world2meet.story.timeline.entry5.p" data-i18n-html>Añadí el <code>DELETE</code>, completando así los cinco requisitos funcionales del enunciado.</p>
+  </div>
+
+  <div class="w2m-entry">
+    <div class="w2m-date"><span data-i18n="world2meet.story.timeline.entry6.date">16 jul 2021</span> <span class="w2m-commit">SuperheroeService Test</span></div>
+    <p data-i18n="world2meet.story.timeline.entry6.p" data-i18n-html>
+      Cerré la entrega con los tests unitarios de <code>SuperheroeServiceImpl</code> usando JUnit 5 y Mockito,
+      cubriendo el camino feliz y el de error (200/201 vs 404) de cada método del servicio. El enunciado solo
+      pedía "test unitarios de algún servicio", así que me centré en cubrir bien ese único servicio en vez de
+      repartir esfuerzo en tests superficiales de más componentes.
+    </p>
+  </div>
+
+</div>
+
+<h2 data-i18n="world2meet.story.decisions.h2">Decisiones de diseño</h2>
+
+<div class="w2m-grid">
+  <div class="w2m-card">
+    <h3 data-i18n="world2meet.story.decisions.card1.h3">Respuesta uniforme</h3>
+    <p data-i18n="world2meet.story.decisions.card1.p" data-i18n-html><code>GenericResponse</code> envuelve status, mensaje y datos en todas las respuestas, para que el frontend consumidor tenga un contrato predecible sin tener que interpretar el código HTTP a ciegas.</p>
+  </div>
+  <div class="w2m-card">
+    <h3 data-i18n="world2meet.story.decisions.card2.h3">Capas desacopladas</h3>
+    <p data-i18n="world2meet.story.decisions.card2.p">Entity ↔ DAO/DTO vía MapStruct, controlador delgado que delega en el servicio, y el servicio hablando solo con el repositorio. Cada pieza tiene una única razón para cambiar.</p>
+  </div>
+  <div class="w2m-card">
+    <h3 data-i18n="world2meet.story.decisions.card3.h3">DDL versionado</h3>
+    <p data-i18n="world2meet.story.decisions.card3.p" data-i18n-html>Liquibase gestiona el esquema y la carga inicial de los 10 héroes de ejemplo, en vez de un <code>schema.sql</code>/<code>data.sql</code> sueltos.</p>
+  </div>
+  <div class="w2m-card">
+    <h3 data-i18n="world2meet.story.decisions.card4.h3">Rutas centralizadas</h3>
+    <p data-i18n="world2meet.story.decisions.card4.p" data-i18n-html><code>URLConstant</code> agrupa los fragmentos de ruta para que no queden strings repetidos y desincronizados entre controlador y tests.</p>
+  </div>
+</div>
+
+<h2 data-i18n="world2meet.story.coverage.h2">Qué quedó cubierto y qué no</h2>
+
+<p data-i18n="world2meet.story.coverage.intro">Siendo honesto con el resultado final, de los puntos opcionales del enunciado:</p>
+
+<ul class="w2m-status-list">
+  <li><span class="w2m-mark done">✓</span> <span data-i18n="world2meet.story.coverage.item1">Librería para el mantenimiento del DDL — Liquibase.</span></li>
+  <li><span class="w2m-mark pending">·</span> <span data-i18n="world2meet.story.coverage.item2" data-i18n-html>Anotación personalizada para medir tiempos de ejecución (estilo <code>@Timed</code>) — no llegué a implementarla.</span></li>
+  <li><span class="w2m-mark pending">·</span> <span data-i18n="world2meet.story.coverage.item3" data-i18n-html>Gestión centralizada de excepciones — los controladores validan a mano, sin <code>@ControllerAdvice</code>.</span></li>
+  <li><span class="w2m-mark pending">·</span> <span data-i18n="world2meet.story.coverage.item4">Test de integración — solo hay test unitario del servicio.</span></li>
+  <li><span class="w2m-mark pending">·</span> <span data-i18n="world2meet.story.coverage.item5">Aplicación dockerizada — no incluí Dockerfile.</span></li>
+  <li><span class="w2m-mark pending">·</span> <span data-i18n="world2meet.story.coverage.item6">Caché de peticiones — no implementada.</span></li>
+  <li><span class="w2m-mark pending">·</span> <span data-i18n="world2meet.story.coverage.item7">Documentación de la API — añadí la dependencia de Spring REST Docs pero no generé la documentación final.</span></li>
+  <li><span class="w2m-mark pending">·</span> <span data-i18n="world2meet.story.coverage.item8" data-i18n-html>Seguridad del API — no añadida (el <code>CrossOrigin("*")</code> queda abierto).</span></li>
+</ul>
+
+<p data-i18n="world2meet.story.coverage.closing" data-i18n-html>
+El detalle de cómo cerrar cada uno de estos puntos, junto con otras mejoras que veo con perspectiva de
+los años, está en <a href="improvements.html">el documento de mejoras pendientes</a>.
+</p>
+
+<div class="cta-row">
+  <a href="https://github.com/albertortells/world2meet-developers" class="btn-primary" target="_blank" rel="noopener" data-i18n="world2meet.cta.github">Ver el código en GitHub ↗</a>
+  <a href="improvements.html" class="btn-ghost" data-i18n="world2meet.cta.improvements">Ver mejoras pendientes →</a>
+  <a href="../" class="btn-ghost" data-i18n="world2meet.cta.back">← Ver otros casos</a>
+</div>
+
+</div>
+</section>
+
+<script src="../translations.js"></script>
+<script src="../script.js"></script>
+</body>
+</html>
