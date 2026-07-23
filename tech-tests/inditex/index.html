@@ -26,19 +26,24 @@
 
 <div class="topbar">
   <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="inditex.nav.role">// TECH TESTS</span></div>
-  <nav>
-    <a href="../" data-i18n="inditex.nav.cases">← Casos</a>
-    <a href="https://albertortells.cat">Portfolio</a>
-  </nav>
-  <div class="topbar-controls">
-    <div class="lang-switch mono" role="group" aria-label="Language">
-      <button type="button" class="lang-btn" data-lang="en">EN</button>
-      <button type="button" class="lang-btn" data-lang="es">ES</button>
-      <button type="button" class="lang-btn" data-lang="ca">CA</button>
+  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="topbarMenu" aria-label="Menu">
+    <span class="menu-icon" aria-hidden="true"></span>
+  </button>
+  <div class="topbar-menu" id="topbarMenu">
+    <nav>
+      <a href="../" data-i18n="inditex.nav.cases">← Casos</a>
+      <a href="https://albertortells.cat">Portfolio</a>
+    </nav>
+    <div class="topbar-controls">
+      <div class="lang-switch mono" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="es">ES</button>
+        <button type="button" class="lang-btn" data-lang="ca">CA</button>
+      </div>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">☾</span>
+      </button>
     </div>
-    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
-      <span class="theme-icon" aria-hidden="true">☾</span>
-    </button>
   </div>
 </div>
 

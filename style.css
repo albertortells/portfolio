@@ -124,6 +124,13 @@ a{color:inherit;}
   letter-spacing:0.04em;
 }
 .topbar .brand strong{font-weight:600;}
+
+.topbar-menu{
+  display:flex;
+  align-items:center;
+  gap:1.75rem;
+}
+
 .topbar nav{display:flex; gap:1.375rem;}
 .topbar nav a{
   font-family:'IBM Plex Mono', monospace;
@@ -142,6 +149,46 @@ a{color:inherit;}
   align-items:center;
   gap:0.625rem;
 }
+
+.menu-toggle{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:29px;
+  height:29px;
+  padding:0;
+  background:transparent;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  cursor:pointer;
+  transition:border-color .15s ease, background .15s ease;
+}
+.menu-toggle:hover{ border-color:var(--stamp-blue); }
+.menu-icon{
+  position:relative;
+  display:block;
+  width:15px;
+  height:1.5px;
+  background:var(--ink-soft);
+  border-radius:1px;
+  transition:transform .2s ease, background .15s ease;
+}
+.menu-icon::before,
+.menu-icon::after{
+  content:'';
+  position:absolute;
+  left:0;
+  width:15px;
+  height:1.5px;
+  background:var(--ink-soft);
+  border-radius:1px;
+  transition:transform .2s ease, top .2s ease;
+}
+.menu-icon::before{ top:-5px; }
+.menu-icon::after{ top:5px; }
+.menu-toggle[aria-expanded="true"] .menu-icon{ background:transparent; }
+.menu-toggle[aria-expanded="true"] .menu-icon::before{ top:0; transform:rotate(45deg); }
+.menu-toggle[aria-expanded="true"] .menu-icon::after{ top:0; transform:rotate(-45deg); }
 
 .lang-switch{
   display:flex;
@@ -184,10 +231,32 @@ a{color:inherit;}
 .theme-toggle:hover{ border-color:var(--stamp-blue); color:var(--ink); }
 
 @media (max-width:40em){
-  .topbar{ flex-wrap:wrap; row-gap:0.75rem; }
-  .topbar nav{ gap:0.875rem; order:2; }
-  .topbar nav a{ font-size:0.6875rem; }
-  .topbar-controls{ order:3; width:100%; justify-content:center; }
+  .menu-toggle{ display:inline-flex; }
+  .topbar-menu{
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
+    flex-direction:column;
+    align-items:stretch;
+    gap:1.125rem;
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+    padding:1.25rem 1.75rem 1.5rem;
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    visibility:hidden;
+    transition:max-height .3s ease, opacity .2s ease, visibility .3s;
+  }
+  .topbar-menu.open{
+    max-height:24rem;
+    opacity:1;
+    visibility:visible;
+  }
+  .topbar nav{ flex-direction:column; gap:0.875rem; }
+  .topbar nav a{ font-size:0.8125rem; }
+  .topbar-controls{ width:100%; justify-content:center; }
 }
 
 /* ---------- hero ---------- */

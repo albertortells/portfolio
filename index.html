@@ -26,22 +26,27 @@
 
 <div class="topbar">
   <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="nav.role">// BACKEND ENGINEER</span></div>
-  <nav>
-    <a href="#log" data-i18n="nav.experience">Experience</a>
-    <a href="#industries" data-i18n="nav.industries">Industries</a>
-    <a href="#stack" data-i18n="nav.stack">Stack</a>
-    <a href="#contact" data-i18n="nav.contact">Contact</a>
-    <a href="https://tech-test.albertortells.cat" target="_blank" rel="noopener" data-i18n="nav.techtests">Tech Tests</a>
-  </nav>
-  <div class="topbar-controls">
-    <div class="lang-switch mono" role="group" aria-label="Language">
-      <button type="button" class="lang-btn" data-lang="en">EN</button>
-      <button type="button" class="lang-btn" data-lang="es">ES</button>
-      <button type="button" class="lang-btn" data-lang="ca">CA</button>
+  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="topbarMenu" aria-label="Menu">
+    <span class="menu-icon" aria-hidden="true"></span>
+  </button>
+  <div class="topbar-menu" id="topbarMenu">
+    <nav>
+      <a href="#log" data-i18n="nav.experience">Experience</a>
+      <a href="#industries" data-i18n="nav.industries">Industries</a>
+      <a href="#stack" data-i18n="nav.stack">Stack</a>
+      <a href="#contact" data-i18n="nav.contact">Contact</a>
+      <a href="https://tech-test.albertortells.cat" target="_blank" rel="noopener" data-i18n="nav.techtests">Tech Tests</a>
+    </nav>
+    <div class="topbar-controls">
+      <div class="lang-switch mono" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="es">ES</button>
+        <button type="button" class="lang-btn" data-lang="ca">CA</button>
+      </div>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">☾</span>
+      </button>
     </div>
-    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
-      <span class="theme-icon" aria-hidden="true">☾</span>
-    </button>
   </div>
 </div>
 

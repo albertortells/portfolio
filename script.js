@@ -115,6 +115,36 @@ systemDarkQuery.addEventListener('change', function (e) {
   if (!getCookie('theme')) applyTheme(e.matches ? 'dark' : 'light');
 });
 
+const menuToggle = document.getElementById('menuToggle');
+const topbarMenu = document.getElementById('topbarMenu');
+
+function closeMenu() {
+  if (!topbarMenu) return;
+  topbarMenu.classList.remove('open');
+  if (menuToggle) menuToggle.setAttribute('aria-expanded', 'false');
+}
+
+if (menuToggle && topbarMenu) {
+  menuToggle.addEventListener('click', function () {
+    const isOpen = topbarMenu.classList.toggle('open');
+    menuToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  topbarMenu.querySelectorAll('nav a').forEach(function (link) {
+    link.addEventListener('click', closeMenu);
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!topbarMenu.classList.contains('open')) return;
+    if (topbarMenu.contains(e.target) || menuToggle.contains(e.target)) return;
+    closeMenu();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+}
+
 document.querySelectorAll('details.entry-more').forEach(function (d) {
   d.addEventListener('toggle', updateToggleLabels);
 });
