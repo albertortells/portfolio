@@ -14,6 +14,7 @@ const TECH_TRANSLATIONS = {
       a3mediaCard: { note: "Seven interview exercises, each with its own bug: Servlet, Spring with and without annotations, Spring MVC, and hot-verifying with curl." },
       oneboxCard: { note: "Cart management system: API-first, outside-in design, in-memory persistence and 17 tests with JUnit 5 + Mockito." },
       inditexCard: { note: "Price-rate API: explicit business priority rule, JdbcTemplate, and layered unit tests with H2 and Mockito." },
+      nuvolarCard: { note: "Flight-plan validation service: business rules decoupled from the service via Spring, on top of an existing domain contract." },
       status: { settled: "SOLVED" },
       contact: {
         tear: "✂ TEAR HERE",
@@ -389,6 +390,48 @@ const TECH_TRANSLATIONS = {
         }
       },
       cta: { github: "View the code on GitHub ↗", back: "← See other cases" }
+    },
+    nuvolar: {
+      title: "How I solved the Nuvolar technical test — Albert Ortells",
+      nav: { role: "// TECH TESTS", cases: "← Cases" },
+      hero: { eyebrow: "CASE · NUVOLAR", h1: "How I solved the Nuvolar technical test" },
+      status: { settled: "SOLVED" },
+      story: {
+        p1: "It all started with a brief from Nuvolar: a small technical test to see how I reason about an existing codebase rather than build one from a blank page. No large systems, no heavy functionality — a flight-plan validation service, most of it already scaffolded, with a clear note on what would be evaluated: the rules implementation, the service and controller wiring, code quality, and the unit tests.",
+        challenge: {
+          h2: "The challenge",
+          p1: "The brief described a flight plan — flight number, take-off time, number of passengers, departure and arrival coordinates — and three business rules it had to satisfy to be considered feasible:",
+          li1: "A maximum flight range of 12.000 km, reduced to 8.000 km once the passenger count goes over 150.",
+          li2: "A reduced range of 9.000 km for take-offs after 2:00 p.m., and an outright ban on take-offs between 8:00 p.m. and 6:00 a.m.",
+          li3: "Westbound flights limited to a 3:00 p.m. take-off cut-off and 3.000 km.",
+          p2: "And, explicitly, four things left for me to do: implement the validation service, implement the rules, finish the controller, and write the unit tests. The brief also warned that the set of rules \"may change in the future\" — a hint I took seriously in how I structured the solution."
+        },
+        reading: {
+          h2: "Reading before writing",
+          p1: "Before touching anything, I read what was already there. The domain model (<code>Flight</code>), the request/response DTOs, the mapper, a <code>Haversine</code> distance calculator and a <code>Direction</code> helper for \"is this flight going West\" were all already implemented and correct. There was also a <code>Rule</code> interface, empty of implementations: <code>validate(Flight)</code> and <code>getErrorMessage(Flight)</code>. That interface was the real hint about how the author intended this to be solved.",
+          p2: "So I didn't start with the controller, and I didn't start from scratch either. I started by writing the three rules as independent classes against that existing contract, then the service that runs them, and only at the end the controller that exposes it over HTTP."
+        },
+        decision: {
+          h2: "The decision I weighed the most: one class per rule, not per condition",
+          p1: "Rule 2 actually bundles two separate conditions: a range restriction for afternoon take-offs, and a hard curfew between 8:00 p.m. and 6:00 a.m. that applies regardless of distance. I could have split those into two <code>Rule</code> implementations for a stricter one-condition-per-class feel. I chose to keep them together in a single <code>TakeOffTimeRule</code>, because both conditions depend on the same single input — the take-off time — and the brief itself describes them as one rule. Splitting them would have optimized for a principle the brief didn't ask for, at the cost of matching its own structure.",
+          p2: "That decision had a second-order consequence worth calling out: what happens when a flight breaks the curfew <em>and</em> would have also exceeded the afternoon range? The rule reports the curfew violation first, since a flight that should never have taken off at all is a more fundamental problem than one that simply flew too far. It's a small judgment call, but it's the kind of thing that's easy to get inconsistent if it isn't decided on purpose.",
+          p3: "The other decision that shaped the whole design was letting <code>FlightValidationService</code> depend on <code>List&lt;Rule&gt;</code> instead of naming each rule explicitly. Spring collects every rule bean into that list automatically, so the service never needs to know how many rules exist or what they check. Given that the brief flagged the rule set as likely to change, keeping the service ignorant of the rules felt like the one piece of design effort that would actually pay off later."
+        },
+        tests: {
+          h2: "Verifying it with tests",
+          p1: "The brief asked for unit tests, so each rule got its own test class focused on its exact boundary values — 150 passengers, 14:00, 15:00, and the 20:00–06:00 curfew window — since those boundaries are exactly where an <code>isBefore</code> vs. <code>isAfter</code> mistake would hide. The service was tested twice: once with mocked rules, to prove the aggregation logic in isolation, and once with the real rules wired in together, to catch anything that only shows up when they interact. The controller got its own slice test with the service mocked out, to check the HTTP contract without re-testing the business logic behind it.",
+          p2: "As a final check on top of the automated suite, I ran the real application and fired several flight plans at the endpoint by hand: a compliant short hop, an overloaded flight past its reduced range, a night take-off, and a westbound flight past both its time and distance limits. Each one came back with exactly the failing rules it should have — including the case where two rules failed on the very same request."
+        },
+        docs: {
+          h2: "Leaving it documented",
+          p: "I wrote up the design decisions and the boundary assumptions in a <code>README.md</code>, alongside how to build, run and test the project, so that verifying the result doesn't require re-deriving any of the reasoning above from the code alone."
+        },
+        result: {
+          h2: "The result",
+          p: "A validation service built on the contract that was already there, where the rule set can grow without touching the service that runs it, and where the one non-obvious judgment call — how to report two failures at once — is made on purpose instead of by accident."
+        }
+      },
+      cta: { back: "← See other cases" }
     }
   },
 
@@ -407,6 +450,7 @@ const TECH_TRANSLATIONS = {
       a3mediaCard: { note: "Siete ejercicios de entrevista con un bug distinto en cada uno: Servlet, Spring con y sin anotaciones, Spring MVC y verificación en caliente con curl." },
       oneboxCard: { note: "Sistema de gestión de carritos: diseño API-first de fuera hacia dentro, persistencia en memoria y 17 tests con JUnit 5 + Mockito." },
       inditexCard: { note: "API de tarifas de precios: prioridad de negocio explícita, JdbcTemplate y tests unitarios por capas con H2 y Mockito." },
+      nuvolarCard: { note: "Servicio de validación de planes de vuelo: reglas de negocio desacopladas del servicio vía Spring, sobre un contrato de dominio ya existente." },
       status: { settled: "RESUELTA" },
       contact: {
         tear: "✂ CORTAR AQUÍ",
@@ -782,6 +826,48 @@ const TECH_TRANSLATIONS = {
         }
       },
       cta: { github: "Ver el código en GitHub ↗", back: "← Ver otros casos" }
+    },
+    nuvolar: {
+      title: "Cómo resolví la prueba técnica de Nuvolar — Albert Ortells",
+      nav: { role: "// PRUEBAS TÉCNICAS", cases: "← Casos" },
+      hero: { eyebrow: "CASO · NUVOLAR", h1: "Cómo resolví la prueba técnica de Nuvolar" },
+      status: { settled: "RESUELTA" },
+      story: {
+        p1: "Todo empezó con un enunciado de Nuvolar: una prueba técnica pequeña para ver cómo razono sobre una base de código ya existente, en vez de construir una desde cero. Nada de sistemas grandes ni de mucha funcionalidad — un servicio de validación de planes de vuelo, la mayor parte ya esbozada, con una nota clara sobre qué se iba a valorar: la implementación de las reglas, el cableado entre servicio y controlador, la calidad del código y los tests unitarios.",
+        challenge: {
+          h2: "El reto",
+          p1: "El enunciado describía un plan de vuelo — número de vuelo, hora de despegue, número de pasajeros, coordenadas de origen y destino — y tres reglas de negocio que debía cumplir para considerarse viable:",
+          li1: "Un alcance máximo de vuelo de 12.000 km, reducido a 8.000 km cuando el número de pasajeros supera los 150.",
+          li2: "Un alcance reducido de 9.000 km para despegues después de las 14:00, y una prohibición directa de despegar entre las 20:00 y las 6:00.",
+          li3: "Vuelos hacia el oeste limitados a un despegue no más tarde de las 15:00 y 3.000 km.",
+          p2: "Y, explícitamente, cuatro cosas que quedaban por mi cuenta: implementar el servicio de validación, implementar las reglas, terminar el controlador y escribir los tests unitarios. El enunciado también avisaba de que el conjunto de reglas «podría cambiar en el futuro» — una pista que me tomé en serio a la hora de estructurar la solución."
+        },
+        reading: {
+          h2: "Leer antes de escribir",
+          p1: "Antes de tocar nada, leí lo que ya había. El modelo de dominio (<code>Flight</code>), los DTOs de entrada/salida, el mapper, una calculadora de distancia <code>Haversine</code> y un helper <code>Direction</code> para «¿este vuelo va hacia el oeste?» ya estaban implementados y eran correctos. También había una interfaz <code>Rule</code>, vacía de implementaciones: <code>validate(Flight)</code> y <code>getErrorMessage(Flight)</code>. Esa interfaz era la pista real de cómo el autor había pensado que se resolviera esto.",
+          p2: "Así que no empecé por el controlador, y tampoco empecé desde cero. Empecé escribiendo las tres reglas como clases independientes contra ese contrato ya existente, luego el servicio que las ejecuta, y solo al final el controlador que lo expone por HTTP."
+        },
+        decision: {
+          h2: "La decisión que más pesé: una clase por regla, no por condición",
+          p1: "La regla 2 en realidad agrupa dos condiciones distintas: una restricción de alcance para despegues de tarde, y un toque de queda estricto entre las 20:00 y las 6:00 que aplica sin importar la distancia. Podría haberlas separado en dos implementaciones de <code>Rule</code> para una sensación más estricta de una condición por clase. Elegí mantenerlas juntas en un único <code>TakeOffTimeRule</code>, porque ambas condiciones dependen de la misma entrada — la hora de despegue — y el propio enunciado las describe como una sola regla. Separarlas habría optimizado para un principio que el enunciado no pedía, a costa de encajar con su propia estructura.",
+          p2: "Esa decisión tuvo una consecuencia de segundo orden que merece mencionarse: ¿qué pasa cuando un vuelo incumple el toque de queda <em>y</em> además habría superado el alcance de la tarde? La regla informa primero de la infracción del toque de queda, ya que un vuelo que nunca debió despegar es un problema más fundamental que uno que simplemente voló demasiado lejos. Es una decisión pequeña, pero del tipo que es fácil dejar inconsistente si no se decide a propósito.",
+          p3: "La otra decisión que dio forma a todo el diseño fue dejar que <code>FlightValidationService</code> dependiera de <code>List&lt;Rule&gt;</code> en vez de nombrar cada regla explícitamente. Spring recolecta automáticamente todos los beans de tipo regla en esa lista, así que el servicio nunca necesita saber cuántas reglas existen ni qué comprueban. Dado que el enunciado marcaba el conjunto de reglas como propenso a cambiar, mantener al servicio ajeno a las reglas me pareció el único esfuerzo de diseño que realmente iba a compensar más adelante."
+        },
+        tests: {
+          h2: "Verificarlo con tests",
+          p1: "El enunciado pedía tests unitarios, así que cada regla tuvo su propia clase de test centrada en sus valores límite exactos — 150 pasajeros, las 14:00, las 15:00 y la franja de toque de queda de 20:00 a 06:00 — porque esos límites son exactamente donde se esconde un error de <code>isBefore</code> frente a <code>isAfter</code>. El servicio se testeó dos veces: una con las reglas mockeadas, para probar la lógica de agregación de forma aislada, y otra con las reglas reales conectadas entre sí, para detectar cualquier cosa que solo aparezca al interactuar. El controlador tuvo su propio test de capa con el servicio mockeado, para comprobar el contrato HTTP sin volver a testear la lógica de negocio que hay detrás.",
+          p2: "Como comprobación final, aparte de la batería automática, levanté la aplicación real y lancé a mano varios planes de vuelo contra el endpoint: un salto corto conforme a las reglas, un vuelo sobrecargado que supera su alcance reducido, un despegue nocturno, y un vuelo hacia el oeste que supera tanto su límite de hora como el de distancia. Cada uno devolvió exactamente las reglas incumplidas que debía — incluido el caso en que dos reglas fallaban en la misma petición."
+        },
+        docs: {
+          h2: "Dejarlo documentado",
+          p: "Recogí las decisiones de diseño y las asunciones sobre los valores límite en un <code>README.md</code>, junto con cómo compilar, ejecutar y testear el proyecto, para que verificar el resultado no exija volver a deducir todo ese razonamiento a partir del código en solitario."
+        },
+        result: {
+          h2: "El resultado",
+          p: "Un servicio de validación construido sobre el contrato que ya existía, donde el conjunto de reglas puede crecer sin tocar el servicio que las ejecuta, y donde la única decisión no obvia — cómo informar de dos fallos a la vez — se toma a propósito y no por accidente."
+        }
+      },
+      cta: { back: "← Ver otros casos" }
     }
   },
 
@@ -800,6 +886,7 @@ const TECH_TRANSLATIONS = {
       a3mediaCard: { note: "Set exercicis d'entrevista amb un bug diferent a cadascun: Servlet, Spring amb i sense anotacions, Spring MVC i verificació en calent amb curl." },
       oneboxCard: { note: "Sistema de gestió de carrets: disseny API-first de fora cap a dins, persistència en memòria i 17 tests amb JUnit 5 + Mockito." },
       inditexCard: { note: "API de tarifes de preus: regla de prioritat de negoci explícita, JdbcTemplate i tests unitaris per capes amb H2 i Mockito." },
+      nuvolarCard: { note: "Servei de validació de plans de vol: regles de negoci desacoblades del servei via Spring, sobre un contracte de domini ja existent." },
       status: { settled: "RESOLTA" },
       contact: {
         tear: "✂ RETALLA AQUÍ",
@@ -1175,6 +1262,48 @@ const TECH_TRANSLATIONS = {
         }
       },
       cta: { github: "Veure el codi a GitHub ↗", back: "← Veure altres casos" }
+    },
+    nuvolar: {
+      title: "Com vaig resoldre la prova tècnica de Nuvolar — Albert Ortells",
+      nav: { role: "// PROVES TÈCNIQUES", cases: "← Casos" },
+      hero: { eyebrow: "CAS · NUVOLAR", h1: "Com vaig resoldre la prova tècnica de Nuvolar" },
+      status: { settled: "RESOLTA" },
+      story: {
+        p1: "Tot va començar amb un enunciat de Nuvolar: una prova tècnica petita per veure com raono sobre una base de codi ja existent, en comptes de construir-ne una des de zero. Res de sistemes grans ni de gaire funcionalitat — un servei de validació de plans de vol, la major part ja esbossada, amb una nota clara sobre què es valoraria: la implementació de les regles, el cablejat entre servei i controlador, la qualitat del codi i els tests unitaris.",
+        challenge: {
+          h2: "El repte",
+          p1: "L'enunciat descrivia un pla de vol — número de vol, hora d'enlairament, nombre de passatgers, coordenades d'origen i destí — i tres regles de negoci que havia de complir per considerar-se viable:",
+          li1: "Un abast màxim de vol de 12.000 km, reduït a 8.000 km quan el nombre de passatgers supera els 150.",
+          li2: "Un abast reduït de 9.000 km per a enlairaments després de les 14:00, i una prohibició directa d'enlairar-se entre les 20:00 i les 6:00.",
+          li3: "Vols cap a l'oest limitats a un enlairament no més tard de les 15:00 i 3.000 km.",
+          p2: "I, explícitament, quatre coses que quedaven per compte meu: implementar el servei de validació, implementar les regles, acabar el controlador i escriure els tests unitaris. L'enunciat també avisava que el conjunt de regles «podria canviar en el futur» — una pista que vaig prendre seriosament a l'hora d'estructurar la solució."
+        },
+        reading: {
+          h2: "Llegir abans d'escriure",
+          p1: "Abans de tocar res, vaig llegir el que ja hi havia. El model de domini (<code>Flight</code>), els DTOs d'entrada/sortida, el mapper, una calculadora de distància <code>Haversine</code> i un helper <code>Direction</code> per a «aquest vol va cap a l'oest?» ja estaven implementats i eren correctes. També hi havia una interfície <code>Rule</code>, buida d'implementacions: <code>validate(Flight)</code> i <code>getErrorMessage(Flight)</code>. Aquesta interfície era la pista real de com l'autor havia pensat que es resolgués això.",
+          p2: "Així que no vaig començar pel controlador, i tampoc vaig començar des de zero. Vaig començar escrivint les tres regles com a classes independents contra aquest contracte ja existent, després el servei que les executa, i només al final el controlador que l'exposa per HTTP."
+        },
+        decision: {
+          h2: "La decisió que més vaig pesar: una classe per regla, no per condició",
+          p1: "La regla 2 en realitat agrupa dues condicions diferents: una restricció d'abast per a enlairaments de tarda, i un toc de queda estricte entre les 20:00 i les 6:00 que aplica sense importar la distància. Les hauria pogut separar en dues implementacions de <code>Rule</code> per a una sensació més estricta d'una condició per classe. Vaig triar mantenir-les juntes en un únic <code>TakeOffTimeRule</code>, perquè totes dues condicions depenen de la mateixa entrada — l'hora d'enlairament — i el mateix enunciat les descriu com una sola regla. Separar-les hauria optimitzat per a un principi que l'enunciat no demanava, a costa d'encaixar amb la seva pròpia estructura.",
+          p2: "Aquesta decisió va tenir una conseqüència de segon ordre que val la pena esmentar: què passa quan un vol incompleix el toc de queda <em>i</em> a més hauria superat l'abast de la tarda? La regla informa primer de la infracció del toc de queda, ja que un vol que mai hauria d'haver enlairat és un problema més fonamental que un que simplement va volar massa lluny. És una decisió petita, però del tipus que és fàcil deixar inconsistent si no es decideix a propòsit.",
+          p3: "L'altra decisió que va donar forma a tot el disseny va ser deixar que <code>FlightValidationService</code> depengués de <code>List&lt;Rule&gt;</code> en comptes d'anomenar cada regla explícitament. Spring recol·lecta automàticament tots els beans de tipus regla en aquesta llista, així que el servei mai necessita saber quantes regles hi ha ni què comproven. Donat que l'enunciat marcava el conjunt de regles com a propens a canviar, mantenir el servei aliè a les regles em va semblar l'únic esforç de disseny que realment compensaria més endavant."
+        },
+        tests: {
+          h2: "Verificar-ho amb tests",
+          p1: "L'enunciat demanava tests unitaris, així que cada regla va tenir la seva pròpia classe de test centrada en els seus valors límit exactes — 150 passatgers, les 14:00, les 15:00 i la franja de toc de queda de 20:00 a 06:00 — perquè aquests límits són exactament on s'amaga un error d'<code>isBefore</code> davant d'<code>isAfter</code>. El servei es va testejar dues vegades: una amb les regles simulades (mock), per provar la lògica d'agregació de forma aïllada, i una altra amb les regles reals connectades entre si, per detectar qualsevol cosa que només aparegui en interactuar. El controlador va tenir el seu propi test de capa amb el servei simulat, per comprovar el contracte HTTP sense tornar a testejar la lògica de negoci que hi ha al darrere.",
+          p2: "Com a comprovació final, a més de la bateria automàtica, vaig aixecar l'aplicació real i vaig llançar a mà diversos plans de vol contra l'endpoint: un salt curt conforme a les regles, un vol sobrecarregat que supera el seu abast reduït, un enlairament nocturn, i un vol cap a l'oest que supera tant el seu límit d'hora com el de distància. Cadascun va retornar exactament les regles incomplertes que havia de retornar — inclòs el cas en què dues regles fallaven en la mateixa petició."
+        },
+        docs: {
+          h2: "Deixar-ho documentat",
+          p: "Vaig recollir les decisions de disseny i les assumpcions sobre els valors límit en un <code>README.md</code>, juntament amb com compilar, executar i testejar el projecte, perquè verificar el resultat no exigeixi tornar a deduir tot aquest raonament a partir del codi en solitari."
+        },
+        result: {
+          h2: "El resultat",
+          p: "Un servei de validació construït sobre el contracte que ja hi havia, on el conjunt de regles pot créixer sense tocar el servei que les executa, i on l'única decisió no òbvia — com informar de dues fallades alhora — es pren a propòsit i no per accident."
+        }
+      },
+      cta: { back: "← Veure altres casos" }
     }
   }
 };

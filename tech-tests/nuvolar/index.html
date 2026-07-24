@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How I solved the Nuvolar technical test — Albert Ortells</title>
+<meta name="description" content="How I solved Nuvolar's technical test: a flight-plan validation service built on an existing contract, with rules that can grow without touching the service that runs them.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How I solved the Nuvolar technical test">
+<meta property="og:description" content="A flight-plan validation service built on an existing contract, with rules that can grow without touching the service that runs them.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How I solved the Nuvolar technical test">
+<meta name="twitter:description" content="A flight-plan validation service built on an existing contract, with rules that can grow without touching the service that runs them.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+    var stored = match ? decodeURIComponent(match[1]) : null;
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body data-page="nuvolar">
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="nuvolar.nav.role">// TECH TESTS</span></div>
+  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="topbarMenu" aria-label="Menu">
+    <span class="menu-icon" aria-hidden="true"></span>
+  </button>
+  <div class="topbar-menu" id="topbarMenu">
+    <nav>
+      <a href="../" data-i18n="nuvolar.nav.cases">← Cases</a>
+      <a href="https://albertortells.cat">Portfolio</a>
+    </nav>
+    <div class="topbar-controls">
+      <div class="lang-switch mono" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="es">ES</button>
+        <button type="button" class="lang-btn" data-lang="ca">CA</button>
+      </div>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner reveal">
+    <p class="eyebrow" data-i18n="nuvolar.hero.eyebrow">CASE · NUVOLAR</p>
+    <h1 data-i18n="nuvolar.hero.h1">How I solved the Nuvolar technical test</h1>
+    <p class="lede">
+      Java · Spring Boot · JUnit 5 · Mockito · 2026 ·
+      <span class="status status-settled" style="margin-left:0.25rem;"><span class="dot"></span><span data-i18n="nuvolar.status.settled">SOLVED</span></span>
+    </p>
+  </div>
+</section>
+
+<section class="section reveal">
+<div class="story">
+
+<p data-i18n="nuvolar.story.p1">
+It all started with a brief from Nuvolar: a small technical test to see how I
+reason about an existing codebase rather than build one from a blank page.
+No large systems, no heavy functionality — a flight-plan validation
+service, most of it already scaffolded, with a clear note on what would be
+evaluated: the rules implementation, the service and controller wiring, code
+quality, and the unit tests.
+</p>
+
+<h2 data-i18n="nuvolar.story.challenge.h2">The challenge</h2>
+<p data-i18n="nuvolar.story.challenge.p1">The brief described a flight plan — flight number, take-off time, number of passengers, departure and arrival coordinates — and three business rules it had to satisfy to be considered feasible:</p>
+<ul>
+  <li data-i18n="nuvolar.story.challenge.li1">A maximum flight range of 12.000 km, reduced to 8.000 km once the passenger count goes over 150.</li>
+  <li data-i18n="nuvolar.story.challenge.li2">A reduced range of 9.000 km for take-offs after 2:00 p.m., and an outright ban on take-offs between 8:00 p.m. and 6:00 a.m.</li>
+  <li data-i18n="nuvolar.story.challenge.li3">Westbound flights limited to a 3:00 p.m. take-off cut-off and 3.000 km.</li>
+</ul>
+<p data-i18n="nuvolar.story.challenge.p2">And, explicitly, four things left for me to do: implement the validation service, implement the rules, finish the controller, and write the unit tests. The brief also warned that the set of rules "may change in the future" — a hint I took seriously in how I structured the solution.</p>
+
+<h2 data-i18n="nuvolar.story.reading.h2">Reading before writing</h2>
+<p data-i18n="nuvolar.story.reading.p1" data-i18n-html>Before touching anything, I read what was already there. The domain model (<code>Flight</code>), the request/response DTOs, the mapper, a <code>Haversine</code> distance calculator and a <code>Direction</code> helper for "is this flight going West" were all already implemented and correct. There was also a <code>Rule</code> interface, empty of implementations: <code>validate(Flight)</code> and <code>getErrorMessage(Flight)</code>. That interface was the real hint about how the author intended this to be solved.</p>
+<p data-i18n="nuvolar.story.reading.p2">So I didn't start with the controller, and I didn't start from scratch either. I started by writing the three rules as independent classes against that existing contract, then the service that runs them, and only at the end the controller that exposes it over HTTP.</p>
+
+<h2 data-i18n="nuvolar.story.decision.h2">The decision I weighed the most: one class per rule, not per condition</h2>
+<p data-i18n="nuvolar.story.decision.p1" data-i18n-html>Rule 2 actually bundles two separate conditions: a range restriction for afternoon take-offs, and a hard curfew between 8:00 p.m. and 6:00 a.m. that applies regardless of distance. I could have split those into two <code>Rule</code> implementations for a stricter one-condition-per-class feel. I chose to keep them together in a single <code>TakeOffTimeRule</code>, because both conditions depend on the same single input — the take-off time — and the brief itself describes them as one rule. Splitting them would have optimized for a principle the brief didn't ask for, at the cost of matching its own structure.</p>
+<p data-i18n="nuvolar.story.decision.p2">That decision had a second-order consequence worth calling out: what happens when a flight breaks the curfew <em>and</em> would have also exceeded the afternoon range? The rule reports the curfew violation first, since a flight that should never have taken off at all is a more fundamental problem than one that simply flew too far. It's a small judgment call, but it's the kind of thing that's easy to get inconsistent if it isn't decided on purpose.</p>
+<p data-i18n="nuvolar.story.decision.p3" data-i18n-html>The other decision that shaped the whole design was letting <code>FlightValidationService</code> depend on <code>List&lt;Rule&gt;</code> instead of naming each rule explicitly. Spring collects every rule bean into that list automatically, so the service never needs to know how many rules exist or what they check. Given that the brief flagged the rule set as likely to change, keeping the service ignorant of the rules felt like the one piece of design effort that would actually pay off later.</p>
+
+<h2 data-i18n="nuvolar.story.tests.h2">Verifying it with tests</h2>
+<p data-i18n="nuvolar.story.tests.p1" data-i18n-html>The brief asked for unit tests, so each rule got its own test class focused on its exact boundary values — 150 passengers, 14:00, 15:00, and the 20:00–06:00 curfew window — since those boundaries are exactly where an <code>isBefore</code> vs. <code>isAfter</code> mistake would hide. The service was tested twice: once with mocked rules, to prove the aggregation logic in isolation, and once with the real rules wired in together, to catch anything that only shows up when they interact. The controller got its own slice test with the service mocked out, to check the HTTP contract without re-testing the business logic behind it.</p>
+<p data-i18n="nuvolar.story.tests.p2">As a final check on top of the automated suite, I ran the real application and fired several flight plans at the endpoint by hand: a compliant short hop, an overloaded flight past its reduced range, a night take-off, and a westbound flight past both its time and distance limits. Each one came back with exactly the failing rules it should have — including the case where two rules failed on the very same request.</p>
+
+<h2 data-i18n="nuvolar.story.docs.h2">Leaving it documented</h2>
+<p data-i18n="nuvolar.story.docs.p" data-i18n-html>I wrote up the design decisions and the boundary assumptions in a <code>README.md</code>, alongside how to build, run and test the project, so that verifying the result doesn't require re-deriving any of the reasoning above from the code alone.</p>
+
+<h2 data-i18n="nuvolar.story.result.h2">The result</h2>
+<p data-i18n="nuvolar.story.result.p">A validation service built on the contract that was already there, where the rule set can grow without touching the service that runs it, and where the one non-obvious judgment call — how to report two failures at once — is made on purpose instead of by accident.</p>
+
+<div class="cta-row">
+  <a href="../" class="btn-ghost" data-i18n="nuvolar.cta.back">← See other cases</a>
+</div>
+
+</div>
+</section>
+
+<script src="../translations.js"></script>
+<script src="../script.js"></script>
+</body>
+</html>
