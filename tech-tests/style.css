@@ -845,3 +845,96 @@ a{color:inherit;}
   padding:0.25rem 0.5rem;
   border-radius:var(--radius);
 }
+
+/* ---------- a3media exercise/timeline components ---------- */
+.a3m-timeline{ margin:0 0 1.5rem 0; }
+.a3m-entry{
+  position:relative;
+  display:grid;
+  grid-template-columns:6.5rem 1fr;
+  gap:0 1.25rem;
+  padding-bottom:1.875rem;
+}
+.a3m-entry:last-child{ padding-bottom:0; }
+.a3m-entry::before{
+  content:'';
+  position:absolute;
+  left:0.375rem;
+  top:0.5rem;
+  bottom:-0.25rem;
+  width:1px;
+  background:var(--line);
+}
+.a3m-entry:last-child::before{ display:none; }
+.a3m-entry::after{
+  content:'';
+  position:absolute;
+  left:0.0625rem;
+  top:0.4375rem;
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:var(--paper);
+  border:2px solid var(--stamp-blue);
+}
+.a3m-rail{
+  padding-left:1.5rem;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:0.6875rem;
+  color:var(--ink-faint);
+  line-height:1.5;
+}
+.a3m-rail .a3m-hash{
+  display:inline-block;
+  color:var(--stamp-blue);
+  background:var(--paper-alt);
+  border:1px solid var(--line);
+  padding:0.0625rem 0.375rem;
+  border-radius:var(--radius);
+  margin-bottom:0.3125rem;
+}
+.a3m-rail .a3m-date{ display:block; }
+.a3m-entry h3{
+  font-size:0.96875rem;
+  color:var(--ink);
+  margin:0 0 0.4375rem 0;
+}
+.a3m-entry p{ margin:0 0 0.625rem 0; color:var(--ink-soft); font-size:0.9375rem; }
+.a3m-entry p:last-child{ margin-bottom:0; }
+@media (max-width:35em){
+  .a3m-entry{ grid-template-columns:1fr; }
+  .a3m-entry::before, .a3m-entry::after{ display:none; }
+  .a3m-rail{ padding-left:0; margin-bottom:0.5rem; display:flex; gap:0.5rem; align-items:center; }
+}
+
+.a3m-decisions{ margin:0 0 1.5rem 0; }
+.a3m-decisions dt{
+  font-weight:600;
+  font-size:0.9375rem;
+  color:var(--ink);
+  margin:0 0 0.3125rem 0;
+  padding-top:1.25rem;
+  border-top:1px solid var(--line);
+}
+.a3m-decisions div:first-child dt{ border-top:none; padding-top:0; }
+.a3m-decisions dd{ margin:0; color:var(--ink-soft); font-size:0.9375rem; }
+
+.a3m-leftovers{ list-style:none; margin:0 0 1.5rem 0; padding:0; }
+.a3m-leftovers li{
+  position:relative;
+  padding:0.5rem 0 0.5rem 1.25rem;
+  border-top:1px solid var(--line);
+  color:var(--ink-soft);
+  font-size:0.9375rem;
+}
+.a3m-leftovers li:first-child{ border-top:none; }
+.a3m-leftovers li::before{
+  content:'';
+  position:absolute;
+  left:0;
+  top:0.9375rem;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--void);
+}

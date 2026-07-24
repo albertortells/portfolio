@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cómo resolví la prueba técnica de Atresmedia — Albert Ortells</title>
+<meta name="description" content="El relato en primera persona de cómo afronté los siete ejercicios de la prueba técnica de Atresmedia: los bugs que encontré, cómo los verifiqué de verdad y qué decisiones tomé por el camino.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cómo resolví la prueba técnica de Atresmedia">
+<meta property="og:description" content="Siete ejercicios sueltos, cada uno con su propio bug esperando debajo, y una regla que terminó marcando todo el proceso: no dar nada por bueno sin ejecutarlo.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Cómo resolví la prueba técnica de Atresmedia">
+<meta name="twitter:description" content="Siete ejercicios sueltos, cada uno con su propio bug esperando debajo, y una regla que terminó marcando todo el proceso: no dar nada por bueno sin ejecutarlo.">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="stylesheet" href="../style.css">
+<script>
+  (function () {
+    var match = document.cookie.match(/(?:^|; )theme=([^;]*)/);
+    var stored = match ? decodeURIComponent(match[1]) : null;
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+</head>
+<body data-page="a3media">
+
+<div class="topbar">
+  <div class="brand mono"><strong>ALBERT ORTELLS</strong> <span data-i18n="a3media.nav.role">// TECH TESTS</span></div>
+  <button type="button" class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="topbarMenu" aria-label="Menu">
+    <span class="menu-icon" aria-hidden="true"></span>
+  </button>
+  <div class="topbar-menu" id="topbarMenu">
+    <nav>
+      <a href="../" data-i18n="a3media.nav.cases">← Casos</a>
+      <a href="https://albertortells.cat">Portfolio</a>
+    </nav>
+    <div class="topbar-controls">
+      <div class="lang-switch mono" role="group" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="es">ES</button>
+        <button type="button" class="lang-btn" data-lang="ca">CA</button>
+      </div>
+      <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false">
+        <span class="theme-icon" aria-hidden="true">☾</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner reveal">
+    <p class="eyebrow" data-i18n="a3media.hero.eyebrow">CASO · ATRESMEDIA</p>
+    <h1 data-i18n="a3media.hero.h1">Cómo resolví la prueba técnica de Atresmedia</h1>
+    <p class="lede">
+      Java 8 · Servlet · Spring 4 · Spring Boot 1.5 · JUnit · 2022 ·
+      <span class="status status-settled" style="margin-left:0.25rem;"><span class="dot"></span><span data-i18n="a3media.status.settled">RESUELTA</span></span>
+    </p>
+  </div>
+</section>
+
+<section class="section reveal">
+<div class="story">
+
+<p data-i18n="a3media.story.p1">
+El relato, en primera persona, de cómo afronté un clásico test de entrevista backend: siete ejercicios sueltos, cada uno con su propio bug esperando debajo, y una regla que terminó marcando todo el proceso — no dar nada por bueno sin ejecutarlo.
+</p>
+
+<h2 data-i18n="a3media.story.challenge.h2">El reto</h2>
+<p data-i18n="a3media.story.challenge.p1" data-i18n-html>El enunciado (<code>ejercicios.md</code>) no pedía construir nada desde cero: era un proyecto Maven multi-módulo ya montado, con siete ejercicios independientes y un bug distinto agazapado en cada uno — desde un factorial que no factorializaba nada hasta un contexto de Spring que se negaba a arrancar. Es el formato típico de una entrevista técnica exprés, con una restricción propia por ejercicio: el 2 pedía corregir los fallos <em>sin</em> usar anotaciones, y el 3 exactamente lo contrario.</p>
+<p data-i18n="a3media.story.challenge.p2" data-i18n-html>Antes de tocar una sola línea, documenté cada enunciado en un <code>README.md</code> por módulo. Así cada ejercicio quedaba con su contrato explícito por escrito antes de empezar a picar código — y con un sitio claro donde anotar, más tarde, qué se había roto y por qué.</p>
+
+<h2 data-i18n="a3media.story.process.h2">El proceso, ejercicio a ejercicio</h2>
+<p data-i18n="a3media.story.process.intro" data-i18n-html>Cada ejercicio se cerró con su propio commit — nueve en total, uno de ellos dedicado solo a limpiar los nombres de los módulos. El historial completo, con más detalle técnico del que cabe aquí, queda en <code>HISTORIAL.md</code>.</p>
+
+<div class="a3m-timeline">
+
+  <div class="a3m-entry">
+    <div class="a3m-rail"><span class="a3m-hash">e76b303</span><span class="a3m-date" data-i18n="a3media.story.timeline.entry1.date">23 jul</span></div>
+    <div>
+      <h3 data-i18n="a3media.story.timeline.entry1.h3">0 · Factorial</h3>
+      <p data-i18n="a3media.story.timeline.entry1.p1" data-i18n-html><code>getFactorial</code> devolvía directamente el número que recibía, sin calcular nada — <code>Main</code> esperaba un <code>24</code> para <code>getFactorial(4)</code> y se encontraba con un <code>4</code>. Mi primer bucle <code>while</code> resolvía el caso feliz pero escondía una trampa: arrancaba <code>result</code> en <code>n</code> y frenaba comparando con <code>1</code>, así que con <code>n=0</code> la condición nunca se cumplía y el bucle no terminaba jamás.</p>
+      <p data-i18n="a3media.story.timeline.entry1.p2" data-i18n-html>La versión final arranca <code>result</code> en <code>1</code> — el valor correcto de <code>0!</code> por definición matemática, el producto vacío, no una elección arbitraria — y solo multiplica mientras <code>n &gt; 1</code>. El primer recordatorio de la sesión: un caso límite obvio puede colarse incluso en un ejercicio que parece resuelto.</p>
+    </div>
+  </div>
+
+  <div class="a3m-entry">
+    <div class="a3m-rail"><span class="a3m-hash">bd9c7ef</span><span class="a3m-date" data-i18n="a3media.story.timeline.entry2.date">24 jul</span></div>
+    <div>
+      <h3 data-i18n="a3media.story.timeline.entry2.h3">1 · Servlet</h3>
+      <p data-i18n="a3media.story.timeline.entry2.p1" data-i18n-html><code>MainServlet</code> estaba vacía; la resolví con un <code>AtomicInteger</code> que cuenta cada GET y devuelve el valor actual, justo lo que pedía el enunciado. Pero se coló un bug más interesante que el propio ejercicio: al escribir <code>@WebServlet</code>, el autocompletado importó <code>jakarta.servlet.annotation.WebServlet</code> en una clase que seguía extendiendo <code>javax.servlet.http.HttpServlet</code>. Compilaba sin quejarse — Java no exige que una anotación case con la jerarquía de tipos de la clase —, pero en un despliegue real habría sido papel mojado o, según la versión de Tomcat, un fallo de carga directo.</p>
+      <p data-i18n="a3media.story.timeline.entry2.p2" data-i18n-html>La causa real estaba en el <code>pom.xml</code>: había añadido <code>tomcat-embed-core</code> (que trae sus propias clases <code>jakarta.servlet.*</code>) a un proyecto pensado para desplegarse sobre un Tomcat ya existente. Quitar esa dependencia y la anotación, dejando que <code>web.xml</code> se encargara en solitario del mapeo, fue la solución de verdad.</p>
+    </div>
+  </div>
+
+  <div class="a3m-entry">
+    <div class="a3m-rail"><span class="a3m-hash">3f81ed3</span><span class="a3m-date" data-i18n="a3media.story.timeline.entry3.date">24 jul</span></div>
+    <div>
+      <h3 data-i18n="a3media.story.timeline.entry3.h3">2 · Spring (sin anotaciones)</h3>
+      <p data-i18n="a3media.story.timeline.entry3.p1" data-i18n-html>Este venía con truco doble. <code>BeanExample</code> tenía getter pero no setter, así que Spring no podía escribir la <em>property</em> que el XML intentaba inyectar. Y, más escondido, <code>base.properties</code> definía la clave <code>fake.property</code> mientras el XML pedía resolver <code>${base.property}</code> — un desajuste invisible para el compilador y el IDE, que solo revienta al ejecutar.</p>
+      <p data-i18n="a3media.story.timeline.entry3.p2" data-i18n-html>Añadí el setter y renombré la clave, sin tocar el XML ni usar una sola anotación, tal y como pedía el enunciado. Lo confirmé arrancando <code>Main</code> de verdad, no leyendo el código: <em>"La prueba ha ido bien"</em> en consola.</p>
+    </div>
+  </div>
+
+  <div class="a3m-entry">
+    <div class="a3m-rail"><span class="a3m-hash">4461d7c</span><span class="a3m-date" data-i18n="a3media.story.timeline.entry4.date">24 jul</span></div>
+    <div>
+      <h3 data-i18n="a3media.story.timeline.entry4.h3">3 · Spring Annotations</h3>
+      <p data-i18n="a3media.story.timeline.entry4.p1" data-i18n-html>Mismo contexto, restricción inversa: había que resolverlo <em>con</em> anotaciones. <code>BeanExample</code> no llevaba <code>@Component</code>, así que el <em>component-scan</em> pasaba de largo; y aunque lo hubiera encontrado, a <code>ServiceExample.beanExample</code> le faltaba <code>@Autowired</code>, con lo que <code>print()</code> habría reventado con un <code>NullPointerException</code>.</p>
+      <p data-i18n="a3media.story.timeline.entry4.p2" data-i18n-html><code>@Component</code> + <code>@Value("${base.property}")</code> en un lado, <code>@Autowired</code> en el otro, sin tocar el XML. Confirmado igual que el ejercicio anterior: arrancando el contexto real.</p>
+    </div>
+  </div>
+
+  <div class="a3m-entry">
+    <div class="a3m-rail"><span class="a3m-hash">f3c15a1</span><span class="a3m-date" data-i18n="a3media.story.timeline.entry5.date">24 jul</span></div>
+    <div>
+      <h3 data-i18n="a3media.story.timeline.entry5.h3">4 · Spring MVC — CRUD de usuarios</h3>
+      <p data-i18n="a3media.story.timeline.entry5.p1" data-i18n-html>Monté los cuatro verbos sobre <code>UserService</code> (ya resuelto de antemano), delegando en él y traduciendo <code>UserNotFounException</code> a un 404. La lógica de negocio salió bien a la primera. Lo que no salió bien fue <code>@RestController("/users")</code>, escrito con la intención de fijar <code>/users</code> como prefijo — pero ese valor es el nombre del bean, heredado de <code>@Component</code>, no una ruta. Nunca participa en el <em>routing</em>, ni escrito así ni como <code>value="/users"</code>.</p>
+      <p data-i18n="a3media.story.timeline.entry5.p2" data-i18n-html>Arranqué la aplicación de verdad y miré el log de arranque: los endpoints reales vivían en la raíz (<code>/</code>, <code>/{id}</code>), y <code>/users</code> solo respondía a medias por un mecanismo heredado de Spring que registra como URL cualquier bean cuyo nombre empiece por «/». Con <code>curl</code> en caliente la inconsistencia era flagrante: <code>GET /users/1</code> devolvía 405; <code>GET /users</code> sin id devolvía 400 al intentar convertir <code>"users"</code> en <code>Integer</code>. La corrección fue separar <code>@RestController</code> de <code>@RequestMapping("/users")</code> — el único mecanismo real para fijar un prefijo a nivel de clase. Repetí la batería completa de <code>curl</code> y esta vez las cinco peticiones devolvieron justo lo esperado: 404, 201, 200, 204, 404.</p>
+    </div>
+  </div>
+
+  <div class="a3m-entry">
+    <div class="a3m-rail"><span class="a3m-hash">a199d82</span><span class="a3m-date" data-i18n="a3media.story.timeline.entry6.date">24 jul</span></div>
+    <div>
+      <h3 data-i18n="a3media.story.timeline.entry6.h3">5 · Número más cercano a cero</h3>
+      <p data-i18n="a3media.story.timeline.entry6.p1" data-i18n-html><code>getClosestToZero</code> devolvía <code>0</code> a pelo — acertaba de milagro en el único test que esperaba justo ese valor. La resolví recorriendo el array con un candidato que se actualiza por valor absoluto, con un criterio de desempate explícito: si dos números son equidistantes de cero, gana el positivo. Los cuatro casos del enunciado dieron el resultado esperado, y probé aparte un par de empates que los tests originales no cubrían (<code>{-2,2}</code> y <code>{2,-2}</code>) para confirmar que el orden de aparición no rompía la regla.</p>
+    </div>
+  </div>
+
+  <div class="a3m-entry">
+    <div class="a3m-rail"><span class="a3m-hash">97919c0</span><span class="a3m-date" data-i18n="a3media.story.timeline.entry7.date">24 jul</span></div>
+    <div>
+      <h3 data-i18n="a3media.story.timeline.entry7.h3">De paso · Nombres de módulo</h3>
+      <p data-i18n="a3media.story.timeline.entry7.p1" data-i18n-html>Revisando los <code>pom.xml</code> encontré que <code>5.ArrayTest</code> tenía el <code>&lt;name&gt;</code> literalmente copiado y pegado del ejercicio 0: se llamaba <em>«Factorial»</em>. Aproveché para alinear los siete módulos bajo la misma convención <code>N. Título</code>.</p>
+    </div>
+  </div>
+
+  <div class="a3m-entry">
+    <div class="a3m-rail"><span class="a3m-hash">89411cb</span><span class="a3m-date" data-i18n="a3media.story.timeline.entry8.date">24 jul</span></div>
+    <div>
+      <h3 data-i18n="a3media.story.timeline.entry8.h3">6 · Palíndromo</h3>
+      <p data-i18n="a3media.story.timeline.entry8.p1" data-i18n-html>La primera versión de <code>isPalindrome</code> comparaba carácter a carácter tras un simple <code>trim()</code>, y pasaba los cinco tests que ya existían... hasta que la probé contra el propio ejemplo que el enunciado usa para <em>definir</em> qué es un palíndromo: <em>«a esa paloma ese amo la pasea»</em>. Fallaba — igual que un clásico como <em>«Anita lava la tina»</em> — porque <code>trim()</code> solo quita espacios de los extremos, no los internos, y no normaliza mayúsculas.</p>
+      <p data-i18n="a3media.story.timeline.entry8.p2" data-i18n-html>La corrección pasa la cadena a minúsculas y elimina los espacios internos antes de comparar. Y ya que el propio test pedía explícitamente «completar las pruebas que le falten», añadí la frase del enunciado, un caso con mayúsculas mezcladas y la cadena vacía a <code>PalindromeTest</code>.</p>
+    </div>
+  </div>
+
+</div>
+
+<h2 data-i18n="a3media.story.decisions.h2">Decisiones que pesé</h2>
+<dl class="a3m-decisions">
+  <div>
+    <dt data-i18n="a3media.story.decisions.item1.dt">Verificar en caliente, no fiarse de la lectura</dt>
+    <dd data-i18n="a3media.story.decisions.item1.dd" data-i18n-html>En más de un ejercicio el código compilaba perfectamente y aun así estaba roto: la mezcla <code>javax</code>/<code>jakarta</code> del ejercicio 1 y el enrutado fantasma del 4 solo se ven arrancando la aplicación de verdad y golpeándola con <code>curl</code>. Para eso tuve que salir del modo <em>offline</em> de Maven más de una vez — el caché local no tenía versiones antiguas de algunos plugins, sobre todo del Spring Boot 1.5.16 del ejercicio 4 —, un recordatorio de que «compila» y «funciona» son afirmaciones distintas.</dd>
+  </div>
+  <div>
+    <dt data-i18n="a3media.story.decisions.item2.dt">Perseguir la causa, no el síntoma</dt>
+    <dd data-i18n="a3media.story.decisions.item2.dd" data-i18n-html>Ni el setter que faltaba en el ejercicio 2 ni la clave <code>fake.property</code> mal escrita en su <code>base.properties</code> eran errores de lógica: eran de cableado. Lo mismo con <code>@RestController("/users")</code> en el 4 — el síntoma (rutas raras) apuntaba a un sitio, la causa (un atributo que nunca fue una ruta) estaba en otro completamente distinto.</dd>
+  </div>
+  <div>
+    <dt data-i18n="a3media.story.decisions.item3.dt">Un commit por ejercicio, un capítulo por commit</dt>
+    <dd data-i18n="a3media.story.decisions.item3.dd" data-i18n-html>Cada ejercicio se resolvió y se documentó como una unidad propia: su commit con mensaje en <em>conventional commits</em>, y su capítulo en <code>HISTORIAL.md</code> contando qué estaba roto y por qué la solución era esa y no otra. El <code>git log</code> es, en sí mismo, la prueba de que cada pieza se puede revisar por separado.</dd>
+  </div>
+</dl>
+
+<h2 data-i18n="a3media.story.leftovers.h2">Qué me habría gustado pulir</h2>
+<p data-i18n="a3media.story.leftovers.intro">Siendo objetivo, verificar en caliente el ejercicio 4 dejó a la vista un par de detalles menores que no incumplían el enunciado, pero que anoté igualmente:</p>
+<ul class="a3m-leftovers">
+  <li data-i18n="a3media.story.leftovers.item1" data-i18n-html>El <code>POST /users</code> siempre devuelve un <em>header</em> <code>Location</code> apuntando a <code>"/"</code>, en vez de a la URL del recurso recién creado.</li>
+  <li data-i18n="a3media.story.leftovers.item2" data-i18n-html>Los <code>ResponseEntity</code> del controlador van sin tipar, lo que renuncia a parte de la seguridad de tipos que Java ofrece de fábrica.</li>
+  <li data-i18n="a3media.story.leftovers.item3" data-i18n-html>El manejo de <code>UserNotFounException</code> se repite en cada método del controlador; un <code>@ExceptionHandler</code> centralizado lo habría limpiado.</li>
+</ul>
+
+<h2 data-i18n="a3media.story.result.h2">El resultado</h2>
+<p data-i18n="a3media.story.result.p">Siete ejercicios, nueve commits, siete bugs distintos — y en casi todos, el fallo real estaba un paso más allá de lo que el enunciado insinuaba. El código final es deliberadamente simple: ninguna abstracción que el ejercicio no pidiera, solo la solución correcta a cada problema y la evidencia de que de verdad lo es.</p>
+
+<div class="cta-row">
+  <a href="https://github.com/albertortells/atresmedia-technical-test" class="btn-primary" target="_blank" rel="noopener" data-i18n="a3media.cta.github">Ver el código en GitHub ↗</a>
+  <a href="../" class="btn-ghost" data-i18n="a3media.cta.back">← Ver otros casos</a>
+</div>
+
+</div>
+</section>
+
+<script src="../translations.js"></script>
+<script src="../script.js"></script>
+</body>
+</html>

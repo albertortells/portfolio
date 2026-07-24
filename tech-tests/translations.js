@@ -11,6 +11,7 @@ const TECH_TRANSLATIONS = {
       section: { eyebrow: "Cases", h2: "Select a case" },
       world2meetCard: { note: "Superhero API: layered architecture, Liquibase-managed DDL, MapStruct, and service-layer unit tests with JUnit 5 and Mockito." },
       cabsaCard: { note: "Animal API: REST endpoints, tests with JUnit 5 + Mockito, and clean code as the main focus." },
+      a3mediaCard: { note: "Seven interview exercises, each with its own bug: Servlet, Spring with and without annotations, Spring MVC, and hot-verifying with curl." },
       oneboxCard: { note: "Cart management system: API-first, outside-in design, in-memory persistence and 17 tests with JUnit 5 + Mockito." },
       inditexCard: { note: "Price-rate API: explicit business priority rule, JdbcTemplate, and layered unit tests with H2 and Mockito." },
       status: { settled: "SOLVED" },
@@ -210,6 +211,99 @@ const TECH_TRANSLATIONS = {
       },
       cta: { github: "View the code on GitHub ↗", back: "← See other cases" }
     },
+    a3media: {
+      title: "How I solved the Atresmedia technical test — Albert Ortells",
+      nav: { role: "// TECH TESTS", cases: "← Cases" },
+      hero: { eyebrow: "CASE · ATRESMEDIA", h1: "How I solved the Atresmedia technical test" },
+      status: { settled: "SOLVED" },
+      story: {
+        p1: "The first-person account of how I tackled a classic backend interview test: seven standalone exercises, each with its own bug waiting underneath, and a rule that ended up shaping the whole process — never trust anything until you've run it.",
+        challenge: {
+          h2: "The challenge",
+          p1: "The brief (<code>ejercicios.md</code>) didn't ask me to build anything from scratch: it was an already-set-up multi-module Maven project, with seven independent exercises and a different bug crouching in each one — from a factorial that didn't factorialize anything to a Spring context that refused to start. It's the typical format of a fast-paced technical interview, with its own constraint per exercise: exercise 2 asked to fix the bugs <em>without</em> using annotations, and exercise 3 asked exactly the opposite.",
+          p2: "Before touching a single line, I documented each brief in a <code>README.md</code> per module. That way every exercise had its contract written down explicitly before I started coding — and a clear place to note, later, what had broken and why."
+        },
+        process: {
+          h2: "The process, exercise by exercise",
+          intro: "Each exercise closed with its own commit — nine in total, one of them dedicated purely to cleaning up the module names. The full history, with more technical detail than fits here, is in <code>HISTORIAL.md</code>."
+        },
+        timeline: {
+          entry1: {
+            date: "23 Jul",
+            h3: "0 · Factorial",
+            p1: "<code>getFactorial</code> returned the number it received straight back, without calculating anything — <code>Main</code> expected <code>24</code> for <code>getFactorial(4)</code> and got a <code>4</code>. My first <code>while</code> loop solved the happy path but hid a trap: it started <code>result</code> at <code>n</code> and stopped by comparing against <code>1</code>, so with <code>n=0</code> the condition was never met and the loop never ended.",
+            p2: "The final version starts <code>result</code> at <code>1</code> — the correct value of <code>0!</code> by mathematical definition, the empty product, not an arbitrary choice — and only multiplies while <code>n &gt; 1</code>. The first reminder of the session: an obvious edge case can slip through even in an exercise that looks solved."
+          },
+          entry2: {
+            date: "24 Jul",
+            h3: "1 · Servlet",
+            p1: "<code>MainServlet</code> was empty; I solved it with an <code>AtomicInteger</code> that counts every GET and returns the current value, exactly what the brief asked for. But a more interesting bug than the exercise itself slipped in: when writing <code>@WebServlet</code>, autocomplete imported <code>jakarta.servlet.annotation.WebServlet</code> into a class that was still extending <code>javax.servlet.http.HttpServlet</code>. It compiled without complaint — Java doesn't require an annotation to match the class's type hierarchy — but in a real deployment it would have been dead weight, or depending on the Tomcat version, a straight-up load failure.",
+            p2: "The real cause was in <code>pom.xml</code>: I had added <code>tomcat-embed-core</code> (which brings its own <code>jakarta.servlet.*</code> classes) to a project meant to be deployed on an already-existing Tomcat. Removing that dependency and the annotation, letting <code>web.xml</code> handle the mapping on its own, was the real fix."
+          },
+          entry3: {
+            date: "24 Jul",
+            h3: "2 · Spring (without annotations)",
+            p1: "This one came with a double trick. <code>BeanExample</code> had a getter but no setter, so Spring couldn't write the property the XML was trying to inject. And, more hidden, <code>base.properties</code> defined the key <code>fake.property</code> while the XML asked to resolve <code>${base.property}</code> — a mismatch invisible to the compiler and the IDE, which only blows up at runtime.",
+            p2: "I added the setter and renamed the key, without touching the XML or using a single annotation, exactly as the brief asked. I confirmed it by actually starting <code>Main</code>, not by reading the code: <em>\"La prueba ha ido bien\"</em> on the console."
+          },
+          entry4: {
+            date: "24 Jul",
+            h3: "3 · Spring Annotations",
+            p1: "Same context, opposite constraint: it had to be solved <em>with</em> annotations. <code>BeanExample</code> was missing <code>@Component</code>, so the component-scan skipped right over it; and even if it had found it, <code>ServiceExample.beanExample</code> was missing <code>@Autowired</code>, so <code>print()</code> would have blown up with a <code>NullPointerException</code>.",
+            p2: "<code>@Component</code> + <code>@Value(\"${base.property}\")</code> on one side, <code>@Autowired</code> on the other, without touching the XML. Confirmed the same way as the previous exercise: by starting the real context."
+          },
+          entry5: {
+            date: "24 Jul",
+            h3: "4 · Spring MVC — User CRUD",
+            p1: "I set up the four verbs on top of <code>UserService</code> (already solved beforehand), delegating to it and translating <code>UserNotFounException</code> into a 404. The business logic worked on the first try. What didn't work was <code>@RestController(\"/users\")</code>, written with the intent of setting <code>/users</code> as a prefix — but that value is the bean's name, inherited from <code>@Component</code>, not a route. It never takes part in routing, neither written that way nor as <code>value=\"/users\"</code>.",
+            p2: "I actually started the application and looked at the startup log: the real endpoints lived at the root (<code>/</code>, <code>/{id}</code>), and <code>/users</code> only half-responded through a legacy Spring mechanism that registers as a URL any bean whose name starts with \"/\". Hot-testing with <code>curl</code> the inconsistency was blatant: <code>GET /users/1</code> returned 405; <code>GET /users</code> with no id returned 400 when trying to convert <code>\"users\"</code> into an <code>Integer</code>. The fix was separating <code>@RestController</code> from <code>@RequestMapping(\"/users\")</code> — the only real mechanism for setting a class-level prefix. I repeated the full <code>curl</code> battery and this time the five requests returned exactly what was expected: 404, 201, 200, 204, 404."
+          },
+          entry6: {
+            date: "24 Jul",
+            h3: "5 · Closest number to zero",
+            p1: "<code>getClosestToZero</code> flatly returned <code>0</code> — it happened to pass by miracle the one test that expected exactly that value. I solved it by walking the array with a candidate updated by absolute value, with an explicit tie-break rule: if two numbers are equidistant from zero, the positive one wins. The brief's four cases gave the expected result, and I separately tested a couple of ties the original tests didn't cover (<code>{-2,2}</code> and <code>{2,-2}</code>) to confirm the order of appearance didn't break the rule."
+          },
+          entry7: {
+            date: "24 Jul",
+            h3: "While we're at it · Module names",
+            p1: "While reviewing the <code>pom.xml</code> files I found that <code>5.ArrayTest</code> had its <code>&lt;name&gt;</code> literally copy-pasted from exercise 0: it was called <em>\"Factorial\"</em>. I took the chance to align all seven modules under the same <code>N. Title</code> convention."
+          },
+          entry8: {
+            date: "24 Jul",
+            h3: "6 · Palindrome",
+            p1: "The first version of <code>isPalindrome</code> compared character by character after a simple <code>trim()</code>, and passed the five tests that already existed... until I tested it against the very example the brief uses to <em>define</em> what a palindrome is: <em>\"a esa paloma ese amo la pasea\"</em>. It failed — same as a classic like <em>\"Anita lava la tina\"</em> — because <code>trim()</code> only removes spaces at the ends, not internal ones, and doesn't normalize case.",
+            p2: "The fix lowercases the string and removes internal spaces before comparing. And since the test itself explicitly asked to \"complete the missing tests\", I added the brief's own phrase, a case with mixed uppercase, and the empty string to <code>PalindromeTest</code>."
+          }
+        },
+        decisions: {
+          h2: "Decisions I weighed",
+          item1: {
+            dt: "Verify hot, don't trust the reading",
+            dd: "In more than one exercise, the code compiled perfectly and was still broken: the <code>javax</code>/<code>jakarta</code> mix in exercise 1 and the phantom routing in exercise 4 only show up by actually starting the application and hitting it with <code>curl</code>. That meant leaving Maven's offline mode more than once — the local cache was missing old versions of some plugins, especially exercise 4's Spring Boot 1.5.16 — a reminder that \"it compiles\" and \"it works\" are different claims."
+          },
+          item2: {
+            dt: "Chase the cause, not the symptom",
+            dd: "Neither the missing setter in exercise 2 nor the misspelled <code>fake.property</code> key in its <code>base.properties</code> were logic errors: they were wiring errors. Same with <code>@RestController(\"/users\")</code> in exercise 4 — the symptom (odd routes) pointed one way, the cause (an attribute that was never a route) sat somewhere else entirely."
+          },
+          item3: {
+            dt: "One commit per exercise, one chapter per commit",
+            dd: "Each exercise was solved and documented as its own unit: its commit with a conventional-commits message, and its chapter in <code>HISTORIAL.md</code> explaining what was broken and why the fix was that one and not another. The <code>git log</code> is, by itself, proof that each piece can be reviewed separately."
+          }
+        },
+        leftovers: {
+          h2: "What I'd have liked to polish",
+          intro: "Being objective, hot-testing exercise 4 surfaced a couple of minor details that didn't break the brief, but that I noted anyway:",
+          item1: "<code>POST /users</code> always returns a <code>Location</code> header pointing to <code>\"/\"</code>, instead of the URL of the newly created resource.",
+          item2: "The controller's <code>ResponseEntity</code> objects are untyped, which gives up part of the type safety Java offers out of the box.",
+          item3: "Handling of <code>UserNotFounException</code> is repeated in every controller method; a centralized <code>@ExceptionHandler</code> would have cleaned that up."
+        },
+        result: {
+          h2: "The result",
+          p: "Seven exercises, nine commits, seven different bugs — and in almost all of them, the real fault was one step further than what the brief hinted at. The final code is deliberately simple: no abstraction the exercise didn't ask for, just the correct solution to each problem and the evidence that it really is one."
+        }
+      },
+      cta: { github: "View the code on GitHub ↗", back: "← See other cases" }
+    },
     onebox: {
       title: "How I solved the OneBox technical test — Albert Ortells",
       nav: { role: "// TECH TESTS", cases: "← Cases" },
@@ -310,6 +404,7 @@ const TECH_TRANSLATIONS = {
       section: { eyebrow: "Casos", h2: "Selecciona un caso" },
       world2meetCard: { note: "API de súper héroes: arquitectura en capas, DDL gestionado con Liquibase, MapStruct y tests unitarios del servicio con JUnit 5 y Mockito." },
       cabsaCard: { note: "API de animales: endpoints REST, tests con JUnit 5 + Mockito, y limpieza de código como foco principal." },
+      a3mediaCard: { note: "Siete ejercicios de entrevista con un bug distinto en cada uno: Servlet, Spring con y sin anotaciones, Spring MVC y verificación en caliente con curl." },
       oneboxCard: { note: "Sistema de gestión de carritos: diseño API-first de fuera hacia dentro, persistencia en memoria y 17 tests con JUnit 5 + Mockito." },
       inditexCard: { note: "API de tarifas de precios: prioridad de negocio explícita, JdbcTemplate y tests unitarios por capas con H2 y Mockito." },
       status: { settled: "RESUELTA" },
@@ -509,6 +604,99 @@ const TECH_TRANSLATIONS = {
       },
       cta: { github: "Ver el código en GitHub ↗", back: "← Ver otros casos" }
     },
+    a3media: {
+      title: "Cómo resolví la prueba técnica de Atresmedia — Albert Ortells",
+      nav: { role: "// PRUEBAS TÉCNICAS", cases: "← Casos" },
+      hero: { eyebrow: "CASO · ATRESMEDIA", h1: "Cómo resolví la prueba técnica de Atresmedia" },
+      status: { settled: "RESUELTA" },
+      story: {
+        p1: "El relato, en primera persona, de cómo afronté un clásico test de entrevista backend: siete ejercicios sueltos, cada uno con su propio bug esperando debajo, y una regla que terminó marcando todo el proceso — no dar nada por bueno sin ejecutarlo.",
+        challenge: {
+          h2: "El reto",
+          p1: "El enunciado (<code>ejercicios.md</code>) no pedía construir nada desde cero: era un proyecto Maven multi-módulo ya montado, con siete ejercicios independientes y un bug distinto agazapado en cada uno — desde un factorial que no factorializaba nada hasta un contexto de Spring que se negaba a arrancar. Es el formato típico de una entrevista técnica exprés, con una restricción propia por ejercicio: el 2 pedía corregir los fallos <em>sin</em> usar anotaciones, y el 3 exactamente lo contrario.",
+          p2: "Antes de tocar una sola línea, documenté cada enunciado en un <code>README.md</code> por módulo. Así cada ejercicio quedaba con su contrato explícito por escrito antes de empezar a picar código — y con un sitio claro donde anotar, más tarde, qué se había roto y por qué."
+        },
+        process: {
+          h2: "El proceso, ejercicio a ejercicio",
+          intro: "Cada ejercicio se cerró con su propio commit — nueve en total, uno de ellos dedicado solo a limpiar los nombres de los módulos. El historial completo, con más detalle técnico del que cabe aquí, queda en <code>HISTORIAL.md</code>."
+        },
+        timeline: {
+          entry1: {
+            date: "23 jul",
+            h3: "0 · Factorial",
+            p1: "<code>getFactorial</code> devolvía directamente el número que recibía, sin calcular nada — <code>Main</code> esperaba un <code>24</code> para <code>getFactorial(4)</code> y se encontraba con un <code>4</code>. Mi primer bucle <code>while</code> resolvía el caso feliz pero escondía una trampa: arrancaba <code>result</code> en <code>n</code> y frenaba comparando con <code>1</code>, así que con <code>n=0</code> la condición nunca se cumplía y el bucle no terminaba jamás.",
+            p2: "La versión final arranca <code>result</code> en <code>1</code> — el valor correcto de <code>0!</code> por definición matemática, el producto vacío, no una elección arbitraria — y solo multiplica mientras <code>n &gt; 1</code>. El primer recordatorio de la sesión: un caso límite obvio puede colarse incluso en un ejercicio que parece resuelto."
+          },
+          entry2: {
+            date: "24 jul",
+            h3: "1 · Servlet",
+            p1: "<code>MainServlet</code> estaba vacía; la resolví con un <code>AtomicInteger</code> que cuenta cada GET y devuelve el valor actual, justo lo que pedía el enunciado. Pero se coló un bug más interesante que el propio ejercicio: al escribir <code>@WebServlet</code>, el autocompletado importó <code>jakarta.servlet.annotation.WebServlet</code> en una clase que seguía extendiendo <code>javax.servlet.http.HttpServlet</code>. Compilaba sin quejarse — Java no exige que una anotación case con la jerarquía de tipos de la clase —, pero en un despliegue real habría sido papel mojado o, según la versión de Tomcat, un fallo de carga directo.",
+            p2: "La causa real estaba en el <code>pom.xml</code>: había añadido <code>tomcat-embed-core</code> (que trae sus propias clases <code>jakarta.servlet.*</code>) a un proyecto pensado para desplegarse sobre un Tomcat ya existente. Quitar esa dependencia y la anotación, dejando que <code>web.xml</code> se encargara en solitario del mapeo, fue la solución de verdad."
+          },
+          entry3: {
+            date: "24 jul",
+            h3: "2 · Spring (sin anotaciones)",
+            p1: "Este venía con truco doble. <code>BeanExample</code> tenía getter pero no setter, así que Spring no podía escribir la <em>property</em> que el XML intentaba inyectar. Y, más escondido, <code>base.properties</code> definía la clave <code>fake.property</code> mientras el XML pedía resolver <code>${base.property}</code> — un desajuste invisible para el compilador y el IDE, que solo revienta al ejecutar.",
+            p2: "Añadí el setter y renombré la clave, sin tocar el XML ni usar una sola anotación, tal y como pedía el enunciado. Lo confirmé arrancando <code>Main</code> de verdad, no leyendo el código: <em>\"La prueba ha ido bien\"</em> en consola."
+          },
+          entry4: {
+            date: "24 jul",
+            h3: "3 · Spring Annotations",
+            p1: "Mismo contexto, restricción inversa: había que resolverlo <em>con</em> anotaciones. <code>BeanExample</code> no llevaba <code>@Component</code>, así que el <em>component-scan</em> pasaba de largo; y aunque lo hubiera encontrado, a <code>ServiceExample.beanExample</code> le faltaba <code>@Autowired</code>, con lo que <code>print()</code> habría reventado con un <code>NullPointerException</code>.",
+            p2: "<code>@Component</code> + <code>@Value(\"${base.property}\")</code> en un lado, <code>@Autowired</code> en el otro, sin tocar el XML. Confirmado igual que el ejercicio anterior: arrancando el contexto real."
+          },
+          entry5: {
+            date: "24 jul",
+            h3: "4 · Spring MVC — CRUD de usuarios",
+            p1: "Monté los cuatro verbos sobre <code>UserService</code> (ya resuelto de antemano), delegando en él y traduciendo <code>UserNotFounException</code> a un 404. La lógica de negocio salió bien a la primera. Lo que no salió bien fue <code>@RestController(\"/users\")</code>, escrito con la intención de fijar <code>/users</code> como prefijo — pero ese valor es el nombre del bean, heredado de <code>@Component</code>, no una ruta. Nunca participa en el <em>routing</em>, ni escrito así ni como <code>value=\"/users\"</code>.",
+            p2: "Arranqué la aplicación de verdad y miré el log de arranque: los endpoints reales vivían en la raíz (<code>/</code>, <code>/{id}</code>), y <code>/users</code> solo respondía a medias por un mecanismo heredado de Spring que registra como URL cualquier bean cuyo nombre empiece por «/». Con <code>curl</code> en caliente la inconsistencia era flagrante: <code>GET /users/1</code> devolvía 405; <code>GET /users</code> sin id devolvía 400 al intentar convertir <code>\"users\"</code> en <code>Integer</code>. La corrección fue separar <code>@RestController</code> de <code>@RequestMapping(\"/users\")</code> — el único mecanismo real para fijar un prefijo a nivel de clase. Repetí la batería completa de <code>curl</code> y esta vez las cinco peticiones devolvieron justo lo esperado: 404, 201, 200, 204, 404."
+          },
+          entry6: {
+            date: "24 jul",
+            h3: "5 · Número más cercano a cero",
+            p1: "<code>getClosestToZero</code> devolvía <code>0</code> a pelo — acertaba de milagro en el único test que esperaba justo ese valor. La resolví recorriendo el array con un candidato que se actualiza por valor absoluto, con un criterio de desempate explícito: si dos números son equidistantes de cero, gana el positivo. Los cuatro casos del enunciado dieron el resultado esperado, y probé aparte un par de empates que los tests originales no cubrían (<code>{-2,2}</code> y <code>{2,-2}</code>) para confirmar que el orden de aparición no rompía la regla."
+          },
+          entry7: {
+            date: "24 jul",
+            h3: "De paso · Nombres de módulo",
+            p1: "Revisando los <code>pom.xml</code> encontré que <code>5.ArrayTest</code> tenía el <code>&lt;name&gt;</code> literalmente copiado y pegado del ejercicio 0: se llamaba <em>«Factorial»</em>. Aproveché para alinear los siete módulos bajo la misma convención <code>N. Título</code>."
+          },
+          entry8: {
+            date: "24 jul",
+            h3: "6 · Palíndromo",
+            p1: "La primera versión de <code>isPalindrome</code> comparaba carácter a carácter tras un simple <code>trim()</code>, y pasaba los cinco tests que ya existían... hasta que la probé contra el propio ejemplo que el enunciado usa para <em>definir</em> qué es un palíndromo: <em>«a esa paloma ese amo la pasea»</em>. Fallaba — igual que un clásico como <em>«Anita lava la tina»</em> — porque <code>trim()</code> solo quita espacios de los extremos, no los internos, y no normaliza mayúsculas.",
+            p2: "La corrección pasa la cadena a minúsculas y elimina los espacios internos antes de comparar. Y ya que el propio test pedía explícitamente «completar las pruebas que le falten», añadí la frase del enunciado, un caso con mayúsculas mezcladas y la cadena vacía a <code>PalindromeTest</code>."
+          }
+        },
+        decisions: {
+          h2: "Decisiones que pesé",
+          item1: {
+            dt: "Verificar en caliente, no fiarse de la lectura",
+            dd: "En más de un ejercicio el código compilaba perfectamente y aun así estaba roto: la mezcla <code>javax</code>/<code>jakarta</code> del ejercicio 1 y el enrutado fantasma del 4 solo se ven arrancando la aplicación de verdad y golpeándola con <code>curl</code>. Para eso tuve que salir del modo <em>offline</em> de Maven más de una vez — el caché local no tenía versiones antiguas de algunos plugins, sobre todo del Spring Boot 1.5.16 del ejercicio 4 —, un recordatorio de que «compila» y «funciona» son afirmaciones distintas."
+          },
+          item2: {
+            dt: "Perseguir la causa, no el síntoma",
+            dd: "Ni el setter que faltaba en el ejercicio 2 ni la clave <code>fake.property</code> mal escrita en su <code>base.properties</code> eran errores de lógica: eran de cableado. Lo mismo con <code>@RestController(\"/users\")</code> en el 4 — el síntoma (rutas raras) apuntaba a un sitio, la causa (un atributo que nunca fue una ruta) estaba en otro completamente distinto."
+          },
+          item3: {
+            dt: "Un commit por ejercicio, un capítulo por commit",
+            dd: "Cada ejercicio se resolvió y se documentó como una unidad propia: su commit con mensaje en <em>conventional commits</em>, y su capítulo en <code>HISTORIAL.md</code> contando qué estaba roto y por qué la solución era esa y no otra. El <code>git log</code> es, en sí mismo, la prueba de que cada pieza se puede revisar por separado."
+          }
+        },
+        leftovers: {
+          h2: "Qué me habría gustado pulir",
+          intro: "Siendo objetivo, verificar en caliente el ejercicio 4 dejó a la vista un par de detalles menores que no incumplían el enunciado, pero que anoté igualmente:",
+          item1: "El <code>POST /users</code> siempre devuelve un <em>header</em> <code>Location</code> apuntando a <code>\"/\"</code>, en vez de a la URL del recurso recién creado.",
+          item2: "Los <code>ResponseEntity</code> del controlador van sin tipar, lo que renuncia a parte de la seguridad de tipos que Java ofrece de fábrica.",
+          item3: "El manejo de <code>UserNotFounException</code> se repite en cada método del controlador; un <code>@ExceptionHandler</code> centralizado lo habría limpiado."
+        },
+        result: {
+          h2: "El resultado",
+          p: "Siete ejercicios, nueve commits, siete bugs distintos — y en casi todos, el fallo real estaba un paso más allá de lo que el enunciado insinuaba. El código final es deliberadamente simple: ninguna abstracción que el ejercicio no pidiera, solo la solución correcta a cada problema y la evidencia de que de verdad lo es."
+        }
+      },
+      cta: { github: "Ver el código en GitHub ↗", back: "← Ver otros casos" }
+    },
     onebox: {
       title: "Cómo resolví la prueba técnica de OneBox — Albert Ortells",
       nav: { role: "// PRUEBAS TÉCNICAS", cases: "← Casos" },
@@ -609,6 +797,7 @@ const TECH_TRANSLATIONS = {
       section: { eyebrow: "Casos", h2: "Selecciona un cas" },
       world2meetCard: { note: "API de superherois: arquitectura en capes, DDL gestionat amb Liquibase, MapStruct i tests unitaris del servei amb JUnit 5 i Mockito." },
       cabsaCard: { note: "API d'animals: endpoints REST, tests amb JUnit 5 + Mockito, i neteja de codi com a focus principal." },
+      a3mediaCard: { note: "Set exercicis d'entrevista amb un bug diferent a cadascun: Servlet, Spring amb i sense anotacions, Spring MVC i verificació en calent amb curl." },
       oneboxCard: { note: "Sistema de gestió de carrets: disseny API-first de fora cap a dins, persistència en memòria i 17 tests amb JUnit 5 + Mockito." },
       inditexCard: { note: "API de tarifes de preus: regla de prioritat de negoci explícita, JdbcTemplate i tests unitaris per capes amb H2 i Mockito." },
       status: { settled: "RESOLTA" },
@@ -804,6 +993,99 @@ const TECH_TRANSLATIONS = {
         result: {
           h2: "El resultat",
           p: "Una API petita, ordenada i provada, que compleix el que demanava CABSA sense més complexitat de la necessària — que, al final, era justament l'objectiu de la prova."
+        }
+      },
+      cta: { github: "Veure el codi a GitHub ↗", back: "← Veure altres casos" }
+    },
+    a3media: {
+      title: "Com vaig resoldre la prova tècnica d'Atresmedia — Albert Ortells",
+      nav: { role: "// PROVES TÈCNIQUES", cases: "← Casos" },
+      hero: { eyebrow: "CAS · ATRESMEDIA", h1: "Com vaig resoldre la prova tècnica d'Atresmedia" },
+      status: { settled: "RESOLTA" },
+      story: {
+        p1: "El relat, en primera persona, de com vaig afrontar un clàssic test d'entrevista backend: set exercicis solts, cadascun amb el seu propi bug esperant a sota, i una regla que va acabar marcant tot el procés — no donar res per bo sense executar-ho.",
+        challenge: {
+          h2: "El repte",
+          p1: "L'enunciat (<code>ejercicios.md</code>) no demanava construir res des de zero: era un projecte Maven multi-mòdul ja muntat, amb set exercicis independents i un bug diferent agotzonat a cadascun — des d'un factorial que no factorialitzava res fins a un context d'Spring que es negava a arrencar. És el format típic d'una entrevista tècnica exprés, amb una restricció pròpia per exercici: el 2 demanava corregir les fallades <em>sense</em> fer servir anotacions, i el 3 exactament el contrari.",
+          p2: "Abans de tocar una sola línia, vaig documentar cada enunciat en un <code>README.md</code> per mòdul. Així cada exercici quedava amb el seu contracte explícit per escrit abans de començar a picar codi — i amb un lloc clar on anotar, més tard, què s'havia trencat i per què."
+        },
+        process: {
+          h2: "El procés, exercici a exercici",
+          intro: "Cada exercici es va tancar amb el seu propi commit — nou en total, un d'ells dedicat només a netejar els noms dels mòduls. L'historial complet, amb més detall tècnic del que hi cap aquí, queda a <code>HISTORIAL.md</code>."
+        },
+        timeline: {
+          entry1: {
+            date: "23 jul",
+            h3: "0 · Factorial",
+            p1: "<code>getFactorial</code> retornava directament el número que rebia, sense calcular res — <code>Main</code> esperava un <code>24</code> per a <code>getFactorial(4)</code> i es trobava amb un <code>4</code>. El meu primer bucle <code>while</code> resolia el cas feliç però amagava un parany: arrencava <code>result</code> a <code>n</code> i frenava comparant amb <code>1</code>, així que amb <code>n=0</code> la condició mai es complia i el bucle no acabava mai.",
+            p2: "La versió final arrenca <code>result</code> a <code>1</code> — el valor correcte de <code>0!</code> per definició matemàtica, el producte buit, no una elecció arbitrària — i només multiplica mentre <code>n &gt; 1</code>. El primer recordatori de la sessió: un cas límit obvi pot colar-se fins i tot en un exercici que sembla resolt."
+          },
+          entry2: {
+            date: "24 jul",
+            h3: "1 · Servlet",
+            p1: "<code>MainServlet</code> estava buida; la vaig resoldre amb un <code>AtomicInteger</code> que compta cada GET i retorna el valor actual, exactament el que demanava l'enunciat. Però es va colar un bug més interessant que el propi exercici: en escriure <code>@WebServlet</code>, l'autocompletat va importar <code>jakarta.servlet.annotation.WebServlet</code> en una classe que seguia estenent <code>javax.servlet.http.HttpServlet</code>. Compilava sense queixar-se — Java no exigeix que una anotació coincideixi amb la jerarquia de tipus de la classe —, però en un desplegament real hauria estat paper mullat o, segons la versió de Tomcat, una fallada de càrrega directa.",
+            p2: "La causa real era al <code>pom.xml</code>: havia afegit <code>tomcat-embed-core</code> (que porta les seves pròpies classes <code>jakarta.servlet.*</code>) a un projecte pensat per desplegar-se sobre un Tomcat ja existent. Treure aquesta dependència i l'anotació, deixant que <code>web.xml</code> s'encarregués en solitari del mapatge, va ser la solució de veritat."
+          },
+          entry3: {
+            date: "24 jul",
+            h3: "2 · Spring (sense anotacions)",
+            p1: "Aquest venia amb truc doble. <code>BeanExample</code> tenia getter però no setter, així que Spring no podia escriure la <em>property</em> que l'XML intentava injectar. I, més amagat, <code>base.properties</code> definia la clau <code>fake.property</code> mentre l'XML demanava resoldre <code>${base.property}</code> — un desajust invisible per al compilador i l'IDE, que només rebenta en executar-se.",
+            p2: "Vaig afegir el setter i vaig renombrar la clau, sense tocar l'XML ni fer servir cap anotació, tal com demanava l'enunciat. Ho vaig confirmar arrencant <code>Main</code> de veritat, no llegint el codi: <em>\"La prueba ha ido bien\"</em> a la consola."
+          },
+          entry4: {
+            date: "24 jul",
+            h3: "3 · Spring Annotations",
+            p1: "Mateix context, restricció inversa: calia resoldre'l <em>amb</em> anotacions. <code>BeanExample</code> no portava <code>@Component</code>, així que el <em>component-scan</em> el passava de llarg; i encara que l'hagués trobat, a <code>ServiceExample.beanExample</code> li faltava <code>@Autowired</code>, amb la qual cosa <code>print()</code> hauria rebentat amb un <code>NullPointerException</code>.",
+            p2: "<code>@Component</code> + <code>@Value(\"${base.property}\")</code> en un costat, <code>@Autowired</code> a l'altre, sense tocar l'XML. Confirmat igual que l'exercici anterior: arrencant el context real."
+          },
+          entry5: {
+            date: "24 jul",
+            h3: "4 · Spring MVC — CRUD d'usuaris",
+            p1: "Vaig muntar els quatre verbs sobre <code>UserService</code> (ja resolt d'antuvi), delegant-hi i traduint <code>UserNotFounException</code> a un 404. La lògica de negoci va sortir bé a la primera. El que no va sortir bé va ser <code>@RestController(\"/users\")</code>, escrit amb la intenció de fixar <code>/users</code> com a prefix — però aquest valor és el nom del bean, heretat de <code>@Component</code>, no una ruta. Mai participa en el <em>routing</em>, ni escrit així ni com a <code>value=\"/users\"</code>.",
+            p2: "Vaig arrencar l'aplicació de veritat i vaig mirar el log d'arrencada: els endpoints reals vivien a l'arrel (<code>/</code>, <code>/{id}</code>), i <code>/users</code> només responia a mitges per un mecanisme heretat d'Spring que registra com a URL qualsevol bean el nom del qual comenci per «/». Amb <code>curl</code> en calent la inconsistència era flagrant: <code>GET /users/1</code> retornava 405; <code>GET /users</code> sense id retornava 400 en intentar convertir <code>\"users\"</code> en <code>Integer</code>. La correcció va ser separar <code>@RestController</code> de <code>@RequestMapping(\"/users\")</code> — l'únic mecanisme real per fixar un prefix a nivell de classe. Vaig repetir la bateria completa de <code>curl</code> i aquesta vegada les cinc peticions van retornar just el que s'esperava: 404, 201, 200, 204, 404."
+          },
+          entry6: {
+            date: "24 jul",
+            h3: "5 · Nombre més proper a zero",
+            p1: "<code>getClosestToZero</code> retornava <code>0</code> a pèl — encertava de miracle en l'únic test que esperava justament aquest valor. La vaig resoldre recorrent l'array amb un candidat que s'actualitza per valor absolut, amb un criteri de desempat explícit: si dos números són equidistants de zero, guanya el positiu. Els quatre casos de l'enunciat van donar el resultat esperat, i vaig provar a part un parell d'empats que els tests originals no cobrien (<code>{-2,2}</code> i <code>{2,-2}</code>) per confirmar que l'ordre d'aparició no trencava la regla."
+          },
+          entry7: {
+            date: "24 jul",
+            h3: "De pas · Noms de mòdul",
+            p1: "Revisant els <code>pom.xml</code> vaig trobar que <code>5.ArrayTest</code> tenia el <code>&lt;name&gt;</code> literalment copiat i enganxat de l'exercici 0: es deia <em>«Factorial»</em>. Vaig aprofitar per alinear els set mòduls sota la mateixa convenció <code>N. Títol</code>."
+          },
+          entry8: {
+            date: "24 jul",
+            h3: "6 · Palíndrom",
+            p1: "La primera versió d'<code>isPalindrome</code> comparava caràcter a caràcter després d'un simple <code>trim()</code>, i passava els cinc tests que ja existien... fins que la vaig provar contra el mateix exemple que l'enunciat fa servir per <em>definir</em> què és un palíndrom: <em>«a esa paloma ese amo la pasea»</em>. Fallava — igual que un clàssic com <em>«Anita lava la tina»</em> — perquè <code>trim()</code> només treu espais dels extrems, no els interns, i no normalitza majúscules.",
+            p2: "La correcció passa la cadena a minúscules i elimina els espais interns abans de comparar. I ja que el mateix test demanava explícitament «completar les proves que li faltin», vaig afegir la frase de l'enunciat, un cas amb majúscules barrejades i la cadena buida a <code>PalindromeTest</code>."
+          }
+        },
+        decisions: {
+          h2: "Decisions que vaig pesar",
+          item1: {
+            dt: "Verificar en calent, no fiar-se de la lectura",
+            dd: "En més d'un exercici el codi compilava perfectament i tot i així estava trencat: la barreja <code>javax</code>/<code>jakarta</code> de l'exercici 1 i l'enrutament fantasma del 4 només es veuen arrencant l'aplicació de veritat i colpejant-la amb <code>curl</code>. Per això vaig haver de sortir del mode <em>offline</em> de Maven més d'un cop — la caché local no tenia versions antigues d'alguns plugins, sobretot del Spring Boot 1.5.16 de l'exercici 4 —, un recordatori que «compila» i «funciona» són afirmacions diferents."
+          },
+          item2: {
+            dt: "Perseguir la causa, no el símptoma",
+            dd: "Ni el setter que faltava a l'exercici 2 ni la clau <code>fake.property</code> mal escrita al seu <code>base.properties</code> eren errors de lògica: eren de cablejat. El mateix amb <code>@RestController(\"/users\")</code> al 4 — el símptoma (rutes estranyes) apuntava a un lloc, la causa (un atribut que mai va ser una ruta) era en un altre completament diferent."
+          },
+          item3: {
+            dt: "Un commit per exercici, un capítol per commit",
+            dd: "Cada exercici es va resoldre i documentar com una unitat pròpia: el seu commit amb missatge en <em>conventional commits</em>, i el seu capítol a <code>HISTORIAL.md</code> explicant què estava trencat i per què la solució era aquella i no una altra. El <code>git log</code> és, per si mateix, la prova que cada peça es pot revisar per separat."
+          }
+        },
+        leftovers: {
+          h2: "Què m'hauria agradat polir",
+          intro: "Sent objectiu, verificar en calent l'exercici 4 va deixar a la vista un parell de detalls menors que no incomplien l'enunciat, però que vaig anotar igualment:",
+          item1: "El <code>POST /users</code> sempre retorna una capçalera <code>Location</code> apuntant a <code>\"/\"</code>, en comptes de la URL del recurs acabat de crear.",
+          item2: "Els <code>ResponseEntity</code> del controlador van sense tipar, cosa que renuncia a part de la seguretat de tipus que Java ofereix de fàbrica.",
+          item3: "El maneig de <code>UserNotFounException</code> es repeteix a cada mètode del controlador; un <code>@ExceptionHandler</code> centralitzat ho hauria netejat."
+        },
+        result: {
+          h2: "El resultat",
+          p: "Set exercicis, nou commits, set bugs diferents — i en gairebé tots, la fallada real estava un pas més enllà del que l'enunciat insinuava. El codi final és deliberadament simple: cap abstracció que l'exercici no demanés, només la solució correcta a cada problema i l'evidència que realment ho és."
         }
       },
       cta: { github: "Veure el codi a GitHub ↗", back: "← Veure altres casos" }
